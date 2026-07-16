@@ -10,5 +10,11 @@
       "name": "v1.16.2",
       "rev": "bf647bd6046f2f7da30d0c2bf435e5c76a780c1b"
     }
+  },
+  "lib/protocol": {
+    "tag": {
+      "name": "v3.2.0",
+      "rev": "87c358fa52bea91017fc3a848bc07db815eed91c"
+    }
   }
 }

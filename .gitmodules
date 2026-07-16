@@ -4,3 +4,6 @@
 [submodule "lib/aave-v4"]
 	path = lib/aave-v4
 	url = https://github.com/aave/aave-v4
+[submodule "lib/protocol"]
+	path = lib/protocol
+	url = https://github.com/centrifuge/protocol
