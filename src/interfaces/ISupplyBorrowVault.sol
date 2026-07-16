@@ -8,6 +8,11 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     /*//////////////////////////////////////////////////////////////
                                 STATE
     //////////////////////////////////////////////////////////////*/
+    struct RedeemRequestData {
+        uint256 pendingShares;
+        uint256 claimableShares;
+        uint256 claimableAssets;
+    }
 
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
