@@ -7,3 +7,6 @@
 [submodule "lib/protocol"]
 	path = lib/protocol
 	url = https://github.com/centrifuge/protocol
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
