@@ -1,0 +1,4 @@
+aave-v4/=lib/aave-v4/src/
+forge-std/=lib/forge-std/src/
+centrifuge/=lib/protocol/src/
+openzeppelin/=lib/openzeppelin-contracts/contracts/
