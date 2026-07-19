@@ -123,4 +123,25 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
     function _transferOut(address to, uint256 assets) internal {
         SafeERC20.safeTransfer(IERC20(asset()), to, assets);
     }
+
+    /**
+     * @notice Gets the decimals of an asset
+     * @dev A return value of false indicates that the attempt failed in some way..
+     * @param assetAddress The address of the token to query.
+     * @return ok Boolean indicating if the operation was successful.
+     * @return assetDecimals The token's decimals if successful, 0 otherwise.
+     */
+    function _getAssetDecimals(address assetAddress) internal view returns (bool ok, uint8 assetDecimals) {
+        (bool success, bytes memory encodedDecimals) =
+            address(assetAddress).staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
+        if (success && encodedDecimals.length >= 32) {
+            uint256 returnedDecimals = abi.decode(encodedDecimals, (uint256));
+            if (returnedDecimals < type(uint8).max) {
+                // casting to 'uint8' is safe because the returned decimals is a valid uint8
+                // forge-lint: disable-next-line(unsafe-typecast)
+                return (true, uint8(returnedDecimals));
+            }
+        }
+        return (false, 0);
+    }
 }
