@@ -80,7 +80,17 @@ contract SupplyBorrowVault is ERC20, AccessControl, ISupplyBorrowVault {
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-    
+    /// @inheritdoc ISupplyBorrowVault
+    function setManager(address newManager) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (newManager == address(0)) revert ZERO_ADDRESS();
+        if (hasRole(MANAGER_ROLE, newManager)) revert INVALID_MANAGER();
+
+        _revokeRole(MANAGER_ROLE, manager);
+
+        manager = newManager;
+        _grantRole(MANAGER_ROLE, newManager);
+        emit managerSet(newManager);
+    }
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
