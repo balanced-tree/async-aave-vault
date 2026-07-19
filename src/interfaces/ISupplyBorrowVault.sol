@@ -20,6 +20,7 @@ interface ISupplyBorrowVault {
     error ZERO_AMOUNT();
     error ZERO_SHARES();
     error ZERO_ADDRESS();
+    error INVALID_ASSET();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
