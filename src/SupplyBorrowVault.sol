@@ -22,7 +22,7 @@ import {IERC7540Operator, IERC7540Redeem} from "centrifuge/misc/interfaces/IERC7
 /// @author balanced-tree
 /// @notice Vault that deposits into Aave v4 Spoke as strategy, borrows against supplied assets and uses the borrowed assets to deposit into another vault.
 /// @dev Has synchronous deposits and asynchronous redemptions.
-contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard, ISupplyBorrowVault {
+contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorrowVault {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -132,7 +132,6 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard, ISupplyBorr
     {
         if (shares == 0) revert ZERO_AMOUNT();
         if (receiver == address(0)) revert ZERO_ADDRESS();
-
     }
 
     // /// @inheritdoc IERC7540Operator
