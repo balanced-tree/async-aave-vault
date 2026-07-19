@@ -19,7 +19,7 @@ import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 /// @author balanced-tree
 /// @notice Vault that deposits into Aave v4 Spoke as strategy, borrows against supplied assets and uses the borrowed assets to deposit into another vault.
 /// @dev Has synchronous deposits and asynchronous redemptions.
-contract SupplyBorrowVault {
+contract SupplyBorrowVault is ERC20 {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -38,5 +38,12 @@ contract SupplyBorrowVault {
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
+    constructor(
+        address asset_,
+        address admin_,
+        address treasury_,
+        string memory name_,
+        string memory symbol_
+    ) ERC20(name_, symbol_) {}
 
 }
