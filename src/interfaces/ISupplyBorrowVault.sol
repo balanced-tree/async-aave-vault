@@ -31,4 +31,10 @@ interface ISupplyBorrowVault is IERC4626 {
     /*//////////////////////////////////////////////////////////////
                                 FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Set the manager of the vault
+     * @param newManager The address of the vault manager
+     * @dev Only the default admin can set the manager
+     */
+    function setManager(address newManager) external;
 }
