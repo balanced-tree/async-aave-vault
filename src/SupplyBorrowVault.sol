@@ -94,4 +94,15 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
       revert();
     }
+
+    /**
+     * @notice Returns the amount of assets that the Vault would exchange for the amount of shares provided, in an ideal
+     * scenario where all the conditions are met.
+     * @param shares The amount of shares to be converted.
+     * @param rounding The directio in which to round division.
+     * @return The equivalent amount of assets.
+     */
+    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
+      revert();
+    }
 }
