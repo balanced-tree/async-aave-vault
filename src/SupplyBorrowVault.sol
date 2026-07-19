@@ -135,15 +135,15 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard, ISupplyBorr
 
     }
 
-    /// @inheritdoc IERC7540Operator
-    function setOperator(address operator, bool approved) external returns (bool) {
-        if (operator == address(0)) revert ZERO_ADDRESS();
-        if (msg.sender == operator) revert INVALID_OPERATOR();
+    // /// @inheritdoc IERC7540Operator
+    // function setOperator(address operator, bool approved) external returns (bool) {
+    //     if (operator == address(0)) revert ZERO_ADDRESS();
+    //     if (msg.sender == operator) revert INVALID_OPERATOR();
 
-        _operators[msg.sender][operator] = approved;
-        emit OperatorSet(msg.sender, operator, approved);
-        return true;
-    }
+    //     _operators[msg.sender][operator] = approved;
+    //     emit OperatorSet(msg.sender, operator, approved);
+    //     return true;
+    // }
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
