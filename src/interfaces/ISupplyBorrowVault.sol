@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {IERC4626} from "openzeppelin/interfaces/IERC4626.sol";
 import {IERC7540Redeem} from "centrifuge/misc/interfaces/IERC7540.sol";
 
-interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
+interface ISupplyBorrowVault {
     /*//////////////////////////////////////////////////////////////
                                 STATE
     //////////////////////////////////////////////////////////////*/
