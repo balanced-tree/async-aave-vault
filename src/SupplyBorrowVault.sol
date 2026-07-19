@@ -100,6 +100,11 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBor
         revert NOT_IMPLEMENTED();
     }
 
+    /// @inheritdoc IERC4626
+    function mint(uint256 shares, address receiver) external override nonReentrant returns (uint256 assets) {
+        revert NOT_IMPLEMENTED();
+    }
+
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
