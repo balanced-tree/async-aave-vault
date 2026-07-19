@@ -38,12 +38,15 @@ contract SupplyBorrowVault is ERC20 {
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(
-        address asset_,
-        address admin_,
-        address treasury_,
-        string memory name_,
-        string memory symbol_
-    ) ERC20(name_, symbol_) {}
+    constructor(address asset_, address admin_, address treasury_, string memory name_, string memory symbol_)
+        ERC20(name_, symbol_)
+    {}
 
+    /*//////////////////////////////////////////////////////////////
+                            VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    /// @inheritdoc IERC20Metadata
+    function decimals() public view override(IERC20Metadata, ERC20) returns (uint8) {
+        return UNDERLYING_DECIMALS;
+    }
 }
