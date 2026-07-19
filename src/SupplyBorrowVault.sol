@@ -184,7 +184,7 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard, ISupplyBorr
      * @return The equivalent amount of shares.
      */
     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
-        revert();
+        return Math.mulDiv(assets, totalSupply() + VIRTUAL_SHARES, totalAssets() + VIRTUAL_ASSETS, rounding);
     }
 
     /**
