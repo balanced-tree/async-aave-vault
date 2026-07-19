@@ -19,7 +19,7 @@ import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 /// @author balanced-tree
 /// @notice Vault that deposits into Aave v4 Spoke as strategy, borrows against supplied assets and uses the borrowed assets to deposit into another vault.
 /// @dev Has synchronous deposits and asynchronous redemptions.
-contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBorrowVault {
+contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard, ISupplyBorrowVault {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -119,7 +119,7 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBor
     function asset() public view override returns (address) {
         return address(ASSET);
     }
-    
+
     /// @inheritdoc IERC4626
     function totalAssets() public view override returns (uint256) {
         revert();
@@ -146,7 +146,7 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBor
      * @return The equivalent amount of shares.
      */
     function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
-      revert();
+        revert();
     }
 
     /**
@@ -157,7 +157,7 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBor
      * @return The equivalent amount of assets.
      */
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
-      revert();
+        revert();
     }
 
     /**
