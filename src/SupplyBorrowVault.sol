@@ -105,4 +105,22 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
       revert();
     }
+
+    /**
+     * @notice Performs a transfer in of underlying assets.
+     * @param from Address from which to transfer the assets.
+     * @param assets Amount of assets to transfer.
+     */
+    function _transferIn(address from, uint256 assets) internal {
+        SafeERC20.safeTransferFrom(IERC20(asset()), from, address(this), assets);
+    }
+
+    /**
+     * @notice Performs a transfer out of underlying assets.
+     * @param to Address to which the assets will be transferred.
+     * @param assets Amount of assets to transfer.
+     */
+    function _transferOut(address to, uint256 assets) internal {
+        SafeERC20.safeTransfer(IERC20(asset()), to, assets);
+    }
 }
