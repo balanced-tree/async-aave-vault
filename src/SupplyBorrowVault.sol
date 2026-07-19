@@ -98,6 +98,7 @@ contract SupplyBorrowVault is ERC20, AccessControl, ReentrancyGuard,  ISupplyBor
     /// @inheritdoc IERC4626
     function deposit(uint256 assets, address receiver) external override nonReentrant returns (uint256 shares) {
         if (receiver == address(0)) revert ZERO_ADDRESS();
+        if (assets == 0) revert ZERO_AMOUNT();
     }
 
     /// @inheritdoc IERC4626
