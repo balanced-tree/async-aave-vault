@@ -51,6 +51,11 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
         // Validate asset
         if (asset_ == address(0)) revert INVALID_ASSET();
         if (asset_.code.length == 0) revert INVALID_ASSET();
+
+        // Set asset and precision
+        (bool success, uint8 assetDecimals) = _getAssetDecimals(asset_);
+        UNDERLYING_DECIMALS = success ? assetDecimals : 18;
+        ASSET = IERC20(asset_);
     }
 
     /*//////////////////////////////////////////////////////////////
