@@ -57,7 +57,7 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
                             VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     /// @inheritdoc IERC20Metadata
-    function decimals() public view override(ERC20) returns (uint8) {
+    function decimals() public view override(IERC20Metadata, ERC20) returns (uint8) {
         return UNDERLYING_DECIMALS;
     }
 
