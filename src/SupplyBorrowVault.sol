@@ -40,7 +40,18 @@ contract SupplyBorrowVault is ERC20 {
     //////////////////////////////////////////////////////////////*/
     constructor(address asset_, address admin_, address treasury_, string memory name_, string memory symbol_)
         ERC20(name_, symbol_)
-    {}
+    {
+        // Validate admin
+        if (admin_ == address(0)) revert ZERO_ADDRESS();
+
+        // Validate and set treasury
+        if (treasury_ == address(0)) revert ZERO_ADDRESS();
+        TREASURY = treasury_;
+
+        // Validate asset
+        if (asset_ == address(0)) revert INVALID_ASSET();
+        if (asset_.code.length == 0) revert INVALID_ASSET();
+    }
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
