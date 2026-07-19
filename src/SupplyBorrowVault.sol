@@ -56,6 +56,11 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
         (bool success, uint8 assetDecimals) = _getAssetDecimals(asset_);
         UNDERLYING_DECIMALS = success ? assetDecimals : 18;
         ASSET = IERC20(asset_);
+
+        // Set roles
+        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
+        _grantRole(MANAGER_ROLE, admin_);
+        manager = admin_;
     }
 
     /*//////////////////////////////////////////////////////////////
