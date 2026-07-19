@@ -20,6 +20,7 @@ interface ISupplyBorrowVault is IERC4626 {
     error ZERO_AMOUNT();
     error ZERO_SHARES();
     error ZERO_ADDRESS();
+    error UNAUTHORIZED();
     error INVALID_ASSET();
     error INVALID_MANAGER();
     error NOT_IMPLEMENTED();
