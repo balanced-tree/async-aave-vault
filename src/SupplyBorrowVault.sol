@@ -20,5 +20,7 @@ import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 /// @notice Vault that deposits into Aave v4 Spoke as strategy, borrows against supplied assets and uses the borrowed assets to deposit into another vault.
 /// @dev Has synchronous deposits and asynchronous redemptions.
 contract SupplyBorrowVault {
+    using SafeERC20 for IERC20;
+    using Math for uint256;
 
 }
