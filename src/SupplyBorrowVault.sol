@@ -65,4 +65,9 @@ contract SupplyBorrowVault is ERC20, ISupplyBorrowVault {
     // function asset() public view override returns (address) {
     //     return address(ASSET);
     // }
+    
+    /// @inheritdoc IERC4626
+    function totalAssets() public view override returns (uint256) {
+        revert();
+    }
 }
