@@ -95,6 +95,10 @@ contract SupplyBorrowVault is ERC20, AccessControl, ISupplyBorrowVault {
     /*//////////////////////////////////////////////////////////////
                             EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+    /// @inheritdoc IERC4626
+    function deposit(uint256 assets, address receiver) external override returns (uint256 shares) {
+        revert NOT_IMPLEMENTED();
+    }
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
