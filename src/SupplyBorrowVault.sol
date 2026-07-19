@@ -23,4 +23,20 @@ contract SupplyBorrowVault {
     using SafeERC20 for IERC20;
     using Math for uint256;
 
+    /*//////////////////////////////////////////////////////////////
+                                STATE
+    //////////////////////////////////////////////////////////////*/
+
+    address public manager;
+
+    // Immutable state
+    IERC20 public immutable ASSET;
+    uint8 public immutable UNDERLYING_DECIMALS;
+
+    address private immutable TREASURY;
+
+    /*//////////////////////////////////////////////////////////////
+                              CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
+
 }
