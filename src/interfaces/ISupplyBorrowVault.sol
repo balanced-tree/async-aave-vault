@@ -23,6 +23,7 @@ interface ISupplyBorrowVault is IERC4626 {
     error INVALID_ASSET();
     error INVALID_MANAGER();
     error NOT_IMPLEMENTED();
+    error INVALID_OPERATOR();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
