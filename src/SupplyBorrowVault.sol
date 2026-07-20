@@ -112,6 +112,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (shares == 0) revert ZERO_AMOUNT();
     }
 
+    /// @inheritdoc IERC7540Redeem
+    function requestRedeem(uint256 shares, address controller, address owner)
+        external
+        override
+        nonReentrant
+        returns (uint256 requestId)
+    {}
+
     /// @inheritdoc IERC4626
     function withdraw(uint256 assets, address receiver, address controller)
         external
