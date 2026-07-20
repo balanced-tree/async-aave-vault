@@ -195,6 +195,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return type(uint256).max;
     }
 
+    /// @inheritdoc IERC4626
+    // TODO: Check supply is enabled
+    function maxMint(address) public view override returns (uint256) {
+        return type(uint256).max;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
