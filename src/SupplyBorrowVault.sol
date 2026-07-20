@@ -249,6 +249,20 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return _operators[controller][operator];
     }
 
+    // TODO: pendingRedeemRequest()
+
+    /// @inheritdoc IERC7540Redeem
+    function claimableRedeemRequest(
+        uint256, /*requestId*/
+        address controller
+    )
+        external
+        view
+        returns (uint256 claimableShares)
+    {
+        return maxRedeem(controller);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
