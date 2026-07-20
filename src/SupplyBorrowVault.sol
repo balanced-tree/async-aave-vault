@@ -313,6 +313,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /**
+     * @notice Deposits assets into the vault.
+     * @param assets Amount of assets to deposit.
+     * @param receiver Address to which the shares will be minted.
+     * @param shares Amount of shares to mint.
+     */
+    function _deposit(uint256 assets, address receiver, uint256 shares) internal {}
+
+    /**
      * @notice Gets the decimals of an asset
      * @dev A return value of false indicates that the attempt failed in some way..
      * @param assetAddress The address of the token to query.
