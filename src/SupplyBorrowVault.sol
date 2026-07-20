@@ -318,7 +318,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
      * @param receiver Address to which the shares will be minted.
      * @param shares Amount of shares to mint.
      */
-    function _deposit(uint256 assets, address receiver, uint256 shares) internal {}
+    function _deposit(uint256 assets, address receiver, uint256 shares) internal {
+        // Pull assets and account only the actual received delta
+        uint256 idleBefore = ASSET.balanceOf(address(this));
+    }
 
     /**
      * @notice Gets the decimals of an asset
