@@ -321,6 +321,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function _deposit(uint256 assets, address receiver, uint256 shares) internal {
         // Pull assets and account only the actual received delta
         uint256 idleBefore = ASSET.balanceOf(address(this));
+
+        _transferIn(msg.sender, assets);
     }
 
     /**
