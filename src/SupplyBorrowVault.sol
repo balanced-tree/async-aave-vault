@@ -201,6 +201,11 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return type(uint256).max;
     }
 
+    /// @inheritdoc IERC4626
+    function maxWithdraw(address owner) public view override returns (uint256) {
+        return 0; // TODO
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
