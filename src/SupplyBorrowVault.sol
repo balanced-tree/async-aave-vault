@@ -125,6 +125,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (msg.sender != owner && !_operators[owner][msg.sender]) revert UNAUTHORIZED();
 
         emit RedeemRequest(controller, owner, 0, msg.sender, shares);
+        
+        return 0;
     }
 
     /// @inheritdoc IERC4626
