@@ -125,7 +125,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (msg.sender != owner && !_operators[owner][msg.sender]) revert UNAUTHORIZED();
 
         emit RedeemRequest(controller, owner, 0, msg.sender, shares);
-        
+
         return 0;
     }
 
@@ -151,15 +151,15 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (receiver == address(0)) revert ZERO_ADDRESS();
     }
 
-    // /// @inheritdoc IERC7540Operator
-    // function setOperator(address operator, bool approved) external returns (bool) {
-    //     if (operator == address(0)) revert ZERO_ADDRESS();
-    //     if (msg.sender == operator) revert INVALID_OPERATOR();
+    /// @inheritdoc IERC7540Operator
+    function setOperator(address operator, bool approved) external returns (bool) {
+        if (operator == address(0)) revert ZERO_ADDRESS();
+        if (msg.sender == operator) revert INVALID_OPERATOR();
 
-    //     _operators[msg.sender][operator] = approved;
-    //     emit OperatorSet(msg.sender, operator, approved);
-    //     return true;
-    // }
+        _operators[msg.sender][operator] = approved;
+        emit OperatorSet(msg.sender, operator, approved);
+        return true;
+    }
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
