@@ -263,6 +263,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return maxRedeem(controller);
     }
 
+    /// @inheritdoc IERC165
+    function supportsInterface(bytes4 interfaceId) public pure override returns (bool supported) {
+        supported = (interfaceId == type(IERC4626).interfaceId) || (interfaceId == type(IERC165).interfaceId)
+            || (interfaceId == type(IERC7540Redeem).interfaceId) || (interfaceId == type(IERC7540Operator).interfaceId);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
