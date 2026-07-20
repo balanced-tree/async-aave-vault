@@ -325,6 +325,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _transferIn(msg.sender, assets);
 
         uint256 assetsReceived = ASSET.balanceOf(address(this)) - idleBefore;
+
+        // TODO: _update
+        _mint(receiver, shares);
+
+        // Emit event
+        emit Deposit(msg.sender, receiver, assets, shares);
     }
 
     /**
