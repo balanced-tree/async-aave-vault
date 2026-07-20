@@ -40,6 +40,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     address public manager;
 
+    /// @notice The amount of internally accounted available assets.
+    uint256 private _accountedIdleAssets;
+
     mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
 
     // Immutable state
