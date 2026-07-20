@@ -47,6 +47,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// Immutable state ///
     IERC20 public immutable ASSET;
+    /// @notice Decimals of the underlying asset (and the share token)
     uint8 public immutable UNDERLYING_DECIMALS;
 
     address private immutable TREASURY;
