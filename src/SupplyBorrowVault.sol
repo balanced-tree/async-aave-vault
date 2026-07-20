@@ -232,6 +232,18 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         revert NOT_IMPLEMENTED();
     }
 
+    /// @inheritdoc IERC4626
+    function previewRedeem(
+        uint256 /*shares*/
+    )
+        public
+        pure
+        override
+        returns (uint256)
+    {
+        revert NOT_IMPLEMENTED();
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
