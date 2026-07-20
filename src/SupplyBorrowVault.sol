@@ -244,6 +244,11 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         revert NOT_IMPLEMENTED();
     }
 
+    /// @inheritdoc IERC7540Operator
+    function isOperator(address controller, address operator) public view returns (bool status) {
+        return _operators[controller][operator];
+    }
+
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
