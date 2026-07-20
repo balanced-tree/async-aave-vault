@@ -45,7 +45,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
 
-    // Immutable state
+    /// Immutable state ///
     IERC20 public immutable ASSET;
     uint8 public immutable UNDERLYING_DECIMALS;
 
