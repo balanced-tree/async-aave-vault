@@ -334,6 +334,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // TODO: _update
         _mint(receiver, shares);
 
+        // Reflect the new assets in vault accounting.
+        _accountedIdleAssets += assetsReceived;
+
         // Emit event
         emit Deposit(msg.sender, receiver, assets, shares);
     }
