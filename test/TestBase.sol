@@ -56,7 +56,7 @@ abstract contract TestBase is Test {
     mapping(uint64 chainId => mapping(string tokenKey => address token)) public tokens;
 
     function setUp() public virtual {
-
+        _prepareForks();
     }
 
     function _prepareForks() internal {
