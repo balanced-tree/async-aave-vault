@@ -182,7 +182,6 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @inheritdoc IERC4626
     function totalAssets() public view override returns (uint256 assets) {
         assets = _accountedIdleAssets;
-        revert();
     }
 
     /// @inheritdoc IERC4626
