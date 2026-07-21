@@ -55,4 +55,15 @@ abstract contract TestBase is Test {
     string[] public tokenKeys = [GHO_KEY, USDC_KEY, USDT_KEY, WETH_KEY, WBTC_KEY];
     mapping(uint64 chainId => mapping(string tokenKey => address token)) public tokens;
 
+    function setUp() public virtual {
+
+    }
+
+    function _prepareForks() internal {
+        forks[ETH] = vm.createSelectFork(ethereumRpcUrl);
+
+        rpcURLs[ETH] = ethereumRpcUrl;
+        // rpcURLs[BASE] = baseRpcUrl;
+    }
+
 }
