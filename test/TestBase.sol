@@ -66,4 +66,30 @@ abstract contract TestBase is Test {
         // rpcURLs[BASE] = baseRpcUrl;
     }
 
+    function _makeTestAccounts() internal {
+        admin = makeAddr("admin");
+        vm.makePersistent(admin);
+        vm.label(admin, "Admin");
+
+        alice = makeAddr("alice");
+        vm.makePersistent(alice);
+        vm.label(alice, "Alice");
+
+        bob = makeAddr("bob");
+        vm.makePersistent(bob);
+        vm.label(bob, "Bob");
+
+        eve = makeAddr("eve");
+        vm.makePersistent(eve);
+        vm.label(eve, "Eve");
+
+        manager = makeAddr("manager");
+        vm.makePersistent(manager);
+        vm.label(manager, "Manager");
+
+        treasury = makeAddr("treasury");
+        vm.makePersistent(treasury);
+        vm.label(treasury, "Protocol Treasury");
+    }
+
 }
