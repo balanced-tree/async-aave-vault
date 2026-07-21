@@ -40,6 +40,19 @@ abstract contract TestBase is Test {
     string public constant WETH_KEY = "WETH";
     string public constant WBTC_KEY = "WBTC";
 
-    
+    address public constant ETH_WBTC = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
+    address public constant ETH_WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public constant ETH_GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+    address public constant ETH_USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address public constant ETH_USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+
+    address public constant BASE_GHO = 0x6Bb7a212910682DCFdbd5BCBb3e28FB4E8da10Ee;
+    address public constant BASE_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
+    address public constant BASE_WETH = 0x4200000000000000000000000000000000000006;
+    address public constant BASE_WBTC = 0x0555E30da8f98308EdB960aa94C0Db47230d2B9c;
+    address public constant BASE_USDT = 0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2;
+
+    string[] public tokenKeys = [GHO_KEY, USDC_KEY, USDT_KEY, WETH_KEY, WBTC_KEY];
+    mapping(uint64 chainId => mapping(string tokenKey => address token)) public tokens;
 
 }
