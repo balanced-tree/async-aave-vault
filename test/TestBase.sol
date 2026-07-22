@@ -92,4 +92,20 @@ abstract contract TestBase is Test {
         vm.label(treasury, "Protocol Treasury");
     }
 
+    function _setTokens() internal {
+        // Mainnet tokens
+        tokens[ETH][WBTC_KEY] = ETH_WBTC;
+        tokens[ETH][USDC_KEY] = ETH_USDC;
+        tokens[ETH][USDT_KEY] = ETH_USDT;
+        tokens[ETH][WETH_KEY] = ETH_WETH;
+        tokens[ETH][GHO_KEY] = ETH_GHO;
+
+        // Base tokens
+        tokens[BASE][WBTC_KEY] = BASE_WBTC;
+        tokens[BASE][USDC_KEY] = BASE_USDC;
+        tokens[BASE][USDT_KEY] = BASE_USDT;
+        tokens[BASE][WETH_KEY] = BASE_WETH;
+        // tokens[BASE][GHO_KEY] = BASE_GHO;
+    }
+
 }
