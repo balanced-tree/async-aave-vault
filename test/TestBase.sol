@@ -108,4 +108,17 @@ abstract contract TestBase is Test {
         // tokens[BASE][GHO_KEY] = BASE_GHO;
     }
 
+    // Just for ETH for now
+    function _fundTestAccounts(uint256 amount) internal {
+        for (uint256 i; i < tokenKeys.length; i++) {
+            address token = tokens[ETH][tokenKeys[i]];
+            if (token != address(0)) {
+                uint256 decimals = IERC20Metadata(token).decimals();
+                deal(token, alice, amount * (10 ** decimals));
+                deal(token, bob, amount * (10 ** decimals));
+                deal(token, eve, amount * (10 ** decimals));
+            }
+        }
+    }
+
 }
