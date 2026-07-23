@@ -22,6 +22,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     error ZERO_ADDRESS();
     error UNAUTHORIZED();
     error INVALID_ASSET();
+    error INVALID_AMOUNT();
     error INVALID_MANAGER();
     error NOT_IMPLEMENTED();
     error INVALID_OPERATOR();
