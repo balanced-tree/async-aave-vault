@@ -12,7 +12,7 @@ import {ReentrancyGuard} from "openzeppelin/utils/ReentrancyGuard.sol";
 import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 
-// Aave 
+// Aave
 import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
 // Interfaces
@@ -300,7 +300,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         view
         returns (uint256 pendingShares)
     {
-      return 0; // TODO
+        return 0; // TODO
     }
 
     /// @inheritdoc IERC7540Redeem
