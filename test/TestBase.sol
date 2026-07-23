@@ -57,6 +57,11 @@ abstract contract TestBase is Test {
 
     function setUp() public virtual {
         _prepareForks();
+
+        _makeTestAccounts();
+
+        _setTokens();
+        _fundTestAccounts(1000 ether);
     }
 
     function _prepareForks() internal {
