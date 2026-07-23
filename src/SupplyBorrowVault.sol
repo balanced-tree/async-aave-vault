@@ -65,6 +65,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     address private immutable TREASURY;
 
     ISpoke public immutable SPOKE;
+    address public immutable HUB_ADDRESS;
     address public immutable SPOKE_ADDRESS;
     address public immutable SPOKE_ORACLE_ADDRESS;
 
