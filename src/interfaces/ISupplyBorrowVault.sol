@@ -25,6 +25,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     error INVALID_MANAGER();
     error NOT_IMPLEMENTED();
     error INVALID_OPERATOR();
+    error INVALID_FEE_AMOUNT();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -40,4 +41,11 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @dev Only the default admin can set the manager
      */
     function setManager(address newManager) external;
+
+    /**
+     * @notice Set the performance fee
+     * @param newFee The new performance fee
+     * @dev Only the default admin can set the performance fee
+     */
+    function setPerformanceFee(uint256 newFee) external;
 }
