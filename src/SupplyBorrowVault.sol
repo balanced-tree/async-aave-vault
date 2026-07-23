@@ -119,6 +119,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function setPerformanceFee(uint256 newFee) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (newFee > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = newFee;
+
+        emit performanceFeeSet(newFee);
     }
 
     /*//////////////////////////////////////////////////////////////
