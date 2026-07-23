@@ -18,5 +18,12 @@ contract SupplyBorrowVaultTest is TestBase {
 
     function setUp() public override {
         super.setUp();
+
+        vm.selectFork(forks[ETH]);
+
+        asset = IERC20(tokens[ETH][USDT_KEY]);
+        borrowAsset = IERC20(tokens[ETH][USDC_KEY]);
+
+        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, name, symbol);
     }
 }
