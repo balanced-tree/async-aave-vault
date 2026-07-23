@@ -52,6 +52,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /*/////////////////// IMMUTABLE STATE ////////////////////////*/
 
     IERC20 public immutable ASSET;
+
     /// @notice Decimals of the underlying asset (and the share token)
     uint8 public immutable UNDERLYING_DECIMALS;
 
@@ -131,6 +132,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function deposit(uint256 assets, address receiver) external override nonReentrant returns (uint256 shares) {
         if (receiver == address(0)) revert ZERO_ADDRESS();
         if (assets == 0) revert ZERO_AMOUNT();
+
+        // Check deposits are enabled
+        uint256 maxAssetAmount = maxDeposit(receiver);
     }
 
     /// @inheritdoc IERC4626
