@@ -48,7 +48,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     uint256 public performanceFee;
 
     /// @notice The target ratio of funds to be kept idle in the vault in basis points.
-    uint256 public targetIdleBps;
+    uint256 private _targetIdleBps;
 
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
@@ -134,7 +134,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @inheritdoc ISupplyBorrowVault
     function setTargetIdleBps(uint256 targetIdleBps_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (targetIdleBps_ > MAX_TARGET_IDLE_BPS) revert INVALID_AMOUNT();
-        targetIdleBps = targetIdleBps_;
+        _targetIdleBps = targetIdleBps_;
     }
 
     /*//////////////////////////////////////////////////////////////
