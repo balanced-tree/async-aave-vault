@@ -47,6 +47,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     uint256 public performanceFee;
 
+    
+
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
 
@@ -126,6 +128,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         performanceFee = newFee;
 
         emit performanceFeeSet(newFee);
+    }
+
+    /// @inheritdoc ISupplyBorrowVault
+    function setTargetIdleBps(uint256 targetIdleBps_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (targetIdleBps_ > MAX_TARGET_IDLE_BPS) revert INVALID_AMOUNT();
+        targetIdleBps = targetIdleBps_;
     }
 
     /*//////////////////////////////////////////////////////////////
