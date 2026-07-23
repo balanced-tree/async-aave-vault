@@ -54,7 +54,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
 
     /**
      * @notice Set the target ratio of funds to be kept idle in the vault in basis points
-     * @param targetIdleBps_ The target ratio of funds to be kept idle in the vault in basis points
+     * @param targetIdleBps The target ratio of funds to be kept idle in the vault in basis points
      * @dev Only the default admin can set the target ratio
      */
     function setTargetIdleBps(uint256 targetIdleBps) external;
