@@ -135,6 +135,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         // Check deposits are enabled
         uint256 maxAssetAmount = maxDeposit(receiver);
+        if (assets > maxAssetAmount) revert MAX_DEPOSIT_EXCEEDED();
     }
 
     /// @inheritdoc IERC4626
