@@ -26,4 +26,24 @@ contract SupplyBorrowVaultTest is TestBase {
 
         vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, 3000, name, symbol);
     }
+
+    function testConstructor() public view {
+        assertEq(vault.asset(), tokens[ETH][USDT_KEY]);
+        assertEq(vault.name(), name);
+        assertEq(vault.symbol(), symbol);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            ADMIN FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    function test_SetManager() public {
+        assertEq(vault.manager(), admin);
+
+        vm.expectRevert();
+        vault.setManager(alice);
+
+        vm.prank(admin);
+        vault.setManager(alice);
+        assertEq(vault.manager(), alice);
+    }
 }
