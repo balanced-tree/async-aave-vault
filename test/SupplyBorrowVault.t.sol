@@ -46,4 +46,13 @@ contract SupplyBorrowVaultTest is TestBase {
         vault.setManager(alice);
         assertEq(vault.manager(), alice);
     }
+
+    function test_SetPerformanceFee() public {
+        vm.expectRevert();
+        vault.setPerformanceFee(4000);
+
+        vm.prank(admin);
+        vault.setPerformanceFee(4000);
+        assertEq(vault.performanceFee(), 4000);
+    }
 }
