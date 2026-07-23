@@ -51,8 +51,13 @@ contract SupplyBorrowVaultTest is TestBase {
         vm.expectRevert();
         vault.setPerformanceFee(4000);
 
-        vm.prank(admin);
+        vm.startPrank(admin);
+        vm.expectRevert();
+        vault.setPerformanceFee(7000);
+
         vault.setPerformanceFee(4000);
+        vm.stopPrank();
+        
         assertEq(vault.performanceFee(), 4000);
     }
 }
