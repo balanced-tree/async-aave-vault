@@ -63,9 +63,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @param asset_ The underlying asset address.
     /// @param admin_ The address of the initial admin.
     /// @param treasury_ The address to which fee funds will be transferred.
+    /// @param performanceFee_ The initial performance fee.
     /// @param name_ The name of the vault.
     /// @param symbol_ The symbol of the share token.
-    constructor(address asset_, address admin_, address treasury_, string memory name_, string memory symbol_)
+    constructor(address asset_, address admin_, address treasury_, uint256 performanceFee_, string memory name_, string memory symbol_)
         ERC20(name_, symbol_)
     {
         // Validate admin
@@ -88,6 +89,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(MANAGER_ROLE, admin_);
         manager = admin_;
+
+        // Set performance fee
+        if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
+        performanceFee = performanceFee_;
     }
 
     /*//////////////////////////////////////////////////////////////
