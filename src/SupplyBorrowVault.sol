@@ -12,11 +12,11 @@ import {ReentrancyGuard} from "openzeppelin/utils/ReentrancyGuard.sol";
 import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 
-// Aave
-import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
-
 // Interfaces
 import {ISupplyBorrowVault} from "./interfaces/ISupplyBorrowVault.sol";
+
+// Aave
+import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
 // Centrifuge
 import {IERC7540Operator, IERC7540Redeem} from "centrifuge/misc/interfaces/IERC7540.sol";
