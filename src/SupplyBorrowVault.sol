@@ -47,7 +47,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     uint256 public performanceFee;
 
-    
+    /// @notice The target ratio of funds to be kept idle in the vault in basis points.
+    uint256 public targetIdleBps;
 
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
