@@ -6,6 +6,8 @@ import {TestBase} from "./TestBase.sol";
 import {SupplyBorrowVault} from "../src/SupplyBorrowVault.sol";
 import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
 
+import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
+
 contract SupplyBorrowVaultTest is TestBase {
 
 }
