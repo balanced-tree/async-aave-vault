@@ -13,4 +13,10 @@ contract SupplyBorrowVaultTest is TestBase {
     IERC20 public borrowAsset;
 
     SupplyBorrowVault public vault;
+    string public name = "SupplyBorrowVault";
+    string public symbol = "SBV";
+
+    function setUp() public override {
+        super.setUp();
+    }
 }
