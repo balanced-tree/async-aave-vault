@@ -64,6 +64,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     address private immutable TREASURY;
 
+    ISpoke public immutable SPOKE;
+    address public immutable SPOKE_ADDRESS;
+
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -135,7 +138,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function setTargetIdleBps(uint256 targetIdleBps_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (targetIdleBps_ > MAX_TARGET_IDLE_BPS) revert INVALID_AMOUNT();
         _targetIdleBps = targetIdleBps_;
-        
+
         emit targetIdleBpsSet(targetIdleBps_);
     }
 
