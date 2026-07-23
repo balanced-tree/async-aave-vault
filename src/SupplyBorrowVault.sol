@@ -41,6 +41,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     address public manager;
 
+    uint256 public performanceFee;
+
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
 
