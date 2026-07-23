@@ -65,7 +65,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @param asset_ The underlying asset address.
     /// @param admin_ The address of the initial admin.
     /// @param treasury_ The address to which fee funds will be transferred.
-    /// @param performanceFee_ The initial performance fee.
+    /// @param performanceFee_ The initial performance fee (in basis points)
     /// @param name_ The name of the vault.
     /// @param symbol_ The symbol of the share token.
     constructor(
@@ -136,6 +136,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // Check deposits are enabled
         uint256 maxAssetAmount = maxDeposit(receiver);
         if (assets > maxAssetAmount) revert MAX_DEPOSIT_EXCEEDED();
+
+        // Calculate shares
+        shares = previewDeposit(assets);
+        if (shares == 0) revert ZERO_SHARES();
+
+        // _deposit
     }
 
     /// @inheritdoc IERC4626
@@ -281,7 +287,18 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return _operators[controller][operator];
     }
 
-    // TODO: pendingRedeemRequest()
+    /// @inheritdoc IERC7540Redeem
+    function pendingRedeemRequest(
+        uint256,
+        /*requestId*/
+        address controller
+    )
+        external
+        view
+        returns (uint256 pendingShares)
+    {
+      return 0; // TODO
+    }
 
     /// @inheritdoc IERC7540Redeem
     function claimableRedeemRequest(
