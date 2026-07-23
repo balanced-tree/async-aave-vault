@@ -32,6 +32,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     uint256 private constant VIRTUAL_ASSETS = 1;
     uint256 private constant VIRTUAL_SHARES = 1;
     uint256 private constant BPS_PRECISION = 10_000;
+    uint256 private constant MAX_PERFORMANCE_FEE = 5000;
     bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     /*//////////////////////////////////////////////////////////////
