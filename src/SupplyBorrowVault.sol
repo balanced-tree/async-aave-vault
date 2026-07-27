@@ -100,6 +100,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @param spokeAddress_ Address of the Aave Spoke contract.
     /// @param aaveReserveId_ The Aave reserve ID of the supplied asset.
     /// @param performanceFee_ The initial performance fee (in basis points)
+    /// @param targetIdleBps_ The initial target ratio of funds to be kept idle in the vault in basis points.
     /// @param name_ The name of the vault.
     /// @param symbol_ The symbol of the share token.
     constructor(
