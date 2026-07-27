@@ -16,6 +16,7 @@ import {IERC20Metadata} from "openzeppelin/interfaces/IERC20Metadata.sol";
 import {ISupplyBorrowVault} from "./interfaces/ISupplyBorrowVault.sol";
 
 // Aave
+import {WadRayMath} from "aave-v4/libraries/math/WadRayMath.sol";
 import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
 // Centrifuge
@@ -26,6 +27,7 @@ import {IERC7540Operator, IERC7540Redeem} from "centrifuge/misc/interfaces/IERC7
 /// @notice Vault that deposits into Aave v4 Spoke as strategy, borrows against supplied assets and uses the borrowed assets to deposit into another vault.
 /// @dev Has synchronous deposits and asynchronous redemptions.
 contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorrowVault {
+    using WadRayMath for uint256;
     using SafeERC20 for IERC20;
     using Math for uint256;
 
@@ -52,6 +54,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
+
+    /// @notice WAD-scaled weighted average cost basis per share for each account.
+    mapping(address shareHolder => uint256 costBasis) public costBasisPerShare;
 
     mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
 
@@ -122,8 +127,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         SPOKE_ORACLE_ADDRESS = SPOKE.ORACLE();
 
         // Validate and set Reserve details
-        if (aaveReserveId_ == borrowReserveId) revert INVALID_ASSET();
-        RESERVE_ID = aaveReserveId;
+        // TODO: if (aaveReserveId_ == borrowReserveId) revert INVALID_ASSET();
+        RESERVE_ID = aaveReserveId_;
         ISpoke.Reserve memory reserve = SPOKE.getReserve(aaveReserveId_);
         // TODO: Check if reserve underlying must be asset
         if (reserve.underlying != address(ASSET)) revert INVALID_ASSET();
@@ -364,6 +369,60 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /*//////////////////////////////////////////////////////////////
                             INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Override of ERC20._update to snapshot weighted-average cost basis per share.
+     * @dev Called on every mint, burn, and transfer. Reads balanceOf before calling super, so all balance reads reflect pre-update state.
+     * @param from The sender (address(0) on mint).
+     * @param to The receiver (address(0) on burn).
+     * @param value The amount of shares being moved.
+     */
+    function _update(address from, address to, uint256 value) internal override {
+        if (from == address(0)) {
+            // Mint flow
+            uint256 oldBalance = balanceOf(to);
+            // Current price per share in WAD: assets per 1e18 shares
+            uint256 currentPrice = _convertToAssets(WadRayMath.WAD, Math.Rounding.Floor);
+
+            if (oldBalance == 0) {
+                costBasisPerShare[to] = currentPrice;
+            } else {
+                uint256 oldBasis = costBasisPerShare[to];
+                costBasisPerShare[to] = (oldBasis * oldBalance + currentPrice * value) / (oldBalance + value);
+            }
+
+            emit CostBasisUpdated(to, costBasisPerShare[to]);
+        } else if (to == address(0)) {
+            // Burn flow
+            if (balanceOf(from) == value) {
+                costBasisPerShare[from] = 0;
+                emit CostBasisUpdated(from, 0);
+            }
+        } else {
+            // Transfer flow
+            uint256 senderBasis = costBasisPerShare[from];
+            uint256 receiverBalance = balanceOf(to);
+
+            // Update receiver's cost basis
+            if (receiverBalance == 0) {
+                costBasisPerShare[to] = senderBasis;
+            } else {
+                uint256 receiverBasis = costBasisPerShare[to];
+                costBasisPerShare[to] =
+                    (receiverBasis * receiverBalance + senderBasis * value) / (receiverBalance + value);
+            }
+
+            emit CostBasisUpdated(to, costBasisPerShare[to]);
+
+            // Reset sender cost basis if their balance is reduced to 0
+            if (balanceOf(from) == value) {
+                costBasisPerShare[from] = 0;
+                emit CostBasisUpdated(from, 0);
+            }
+        }
+
+        super._update(from, to, value);
+    }
+
     /**
      * @notice Returns the amount of shares that the Vault would exchange for the amount of assets provided, in an ideal
      * scenario where all the conditions are met.
