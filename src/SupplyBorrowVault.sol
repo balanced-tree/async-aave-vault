@@ -110,6 +110,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _grantRole(MANAGER_ROLE, admin_);
         manager = admin_;
 
+        // Validate and set Spoke details
+        if (spokeAddress_ == address(0)) revert ZERO_ADDRESS();
+        SPOKE_ADDRESS = spokeAddress_;
+        SPOKE = ISpoke(spokeAddress_);
+        SPOKE_ORACLE_ADDRESS = SPOKE.ORACLE();
+
         // Set performance fee
         if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = performanceFee_;
