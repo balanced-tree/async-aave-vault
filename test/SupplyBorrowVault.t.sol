@@ -27,7 +27,7 @@ contract SupplyBorrowVaultTest is TestBase {
         vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, 3000, name, symbol);
     }
 
-    function testConstructor() public view {
+    function test_Constructor() public view {
         assertEq(vault.asset(), tokens[ETH][USDT_KEY]);
         assertEq(vault.SPOKE_ADDRESS(), spokeAddresses[ETH]);
         assertEq(vault.name(), name);
@@ -76,5 +76,15 @@ contract SupplyBorrowVaultTest is TestBase {
         vm.stopPrank();
 
         assertEq(vault.performanceFee(), 4000);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        COST BASIS TESTS
+    //////////////////////////////////////////////////////////////*/
+    function test_CostBasis_firstDeposit() public {
+        // Empty vault so pps should be 1
+        _depositAs(alice, 1000e6);
+
+        assertEq(vault.costBasisPerShare(alice), 1e18);
     }
 }
