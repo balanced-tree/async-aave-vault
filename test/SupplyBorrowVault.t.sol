@@ -48,6 +48,23 @@ contract SupplyBorrowVaultTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
+                           HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    function _depositAs(address user, uint256 amount) internal returns (uint256 shares) {
+        vm.startPrank(user);
+        asset.forceApprove(address(vault), amount);
+        shares = vault.deposit(amount, user);
+        vm.stopPrank();
+    }
+
+    function _mintAs(address user, uint256 shares) internal returns (uint256 assets) {
+        vm.startPrank(user);
+        asset.forceApprove(address(vault), shares);
+        assets = vault.mint(shares, user);
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     function test_SetManager() public {
@@ -92,23 +109,6 @@ contract SupplyBorrowVaultTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
-                           HELPER FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-    function _depositAs(address user, uint256 amount) internal returns (uint256 shares) {
-        vm.startPrank(user);
-        asset.forceApprove(address(vault), amount);
-        shares = vault.deposit(amount, user);
-        vm.stopPrank();
-    }
-
-    function _mintAs(address user, uint256 shares) internal returns (uint256 assets) {
-        vm.startPrank(user);
-        asset.forceApprove(address(vault), shares);
-        assets = vault.mint(shares, user);
-        vm.stopPrank();
-    }
-
-    /*//////////////////////////////////////////////////////////////
                         COST BASIS TESTS
     //////////////////////////////////////////////////////////////*/
     function test_CostBasis_firstDeposit() public {
@@ -116,5 +116,32 @@ contract SupplyBorrowVaultTest is TestBase {
         _depositAs(alice, 1000e6);
 
         assertEq(vault.costBasisPerShare(alice), 1e18);
+    }
+
+    function test_CostBasis_firstMint() public {
+        _mintAs(alice, 1000e6);
+
+        assertEq(vault.costBasisPerShare(alice), 1e18);
+    }
+
+    function test_CostBasis_secondDepositAtHigherPrice() public {
+        // First deposit at 1:1.
+        uint256 sharesBefore = _depositAs(alice, 1_000e6);
+        assertEq(vault.costBasisPerShare(alice), 1e18, "First deposit basis should be WAD");
+
+        // Accrue real Aave yield by advancing time.
+        vm.warp(block.timestamp + 365 days);
+
+        // Snapshot the price the vault will use
+        uint256 priceAfterYield = vault.convertToAssets(1e18);
+        assertGt(priceAfterYield, 1e18, "price should rise after yield");
+
+        // Second deposit blends the higher price into the weighted-average basis.
+        uint256 sharesAdded = _depositAs(alice, 1_000e6);
+
+        // Mirror _update's integer math exactly.
+        uint256 expected = (1e18 * sharesBefore + priceAfterYield * sharesAdded) / (sharesBefore + sharesAdded);
+
+        assertEq(vault.costBasisPerShare(alice), expected, "weighted-average basis after yield");
     }
 }
