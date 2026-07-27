@@ -35,11 +35,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
                               CONSTANTS
     //////////////////////////////////////////////////////////////*/
     uint256 private constant WAD = 1e18;
+
     uint256 private constant VIRTUAL_ASSETS = 1;
     uint256 private constant VIRTUAL_SHARES = 1;
+
     uint256 private constant BPS_PRECISION = 10_000;
     uint256 private constant MAX_TARGET_IDLE_BPS = 4000;
     uint256 private constant MAX_PERFORMANCE_FEE = 5000;
+
     bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     /*//////////////////////////////////////////////////////////////
@@ -478,11 +481,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         uint256 assetsReceived = ASSET.balanceOf(address(this)) - idleBefore;
 
-        // TODO: _update
+        /// @dev _update() snapshots the depositor's cost basis. The cost basis must be the price-per-share before this deposit is reflected in the vault's accounting.
         _mint(receiver, shares);
 
         // Reflect the new assets in vault accounting.
         _accountedIdleAssets += assetsReceived;
+
+        // Supply any idle above the target buffer to Aave.
+        // TODO: _rebalanceIdleAssetsToAave();
 
         // Emit event
         emit Deposit(msg.sender, receiver, assets, shares);
