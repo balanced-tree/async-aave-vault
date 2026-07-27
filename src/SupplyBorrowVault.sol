@@ -193,7 +193,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         shares = previewDeposit(assets);
         if (shares == 0) revert ZERO_SHARES();
 
-        // _deposit
+        // Deposit assets into the vault
+        _deposit(assets, receiver, shares);
     }
 
     /// @inheritdoc IERC4626
