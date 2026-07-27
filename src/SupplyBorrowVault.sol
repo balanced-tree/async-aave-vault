@@ -634,4 +634,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _accountedIdleAssets -= excessIdle;
         _supplyToAave(excessIdle);
     }
+
+    /**
+     * @notice Performs a withdrawal operation from the Aave Spoke.
+     * @param amountToWithdraw The amount to withddraw.
+     * @return amountReceived The amount of assets received from withdrawal.
+     */
+    function _withdrawFromAave(uint256 amountToWithdraw) internal returns (uint256 amountReceived) {
+        (, amountReceived) =
+            SPOKE.withdraw({reserveId: RESERVE_ID, amount: amountToWithdraw, onBehalfOf: address(this)});
+    }
 }
