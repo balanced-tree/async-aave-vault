@@ -201,6 +201,15 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function mint(uint256 shares, address receiver) external override nonReentrant returns (uint256 assets) {
         if (receiver == address(0)) revert ZERO_ADDRESS();
         if (shares == 0) revert ZERO_AMOUNT();
+
+        // Check mints are enabled
+        uint256 maxShareAmount = maxMint(receiver);
+        if (shares > maxShareAmount) revert MAX_MINT_EXCEEDED();
+
+        assets = _convertToAssets(shares, Math.Rounding.Ceil);
+
+        // Deposit assets into the vault
+        _deposit(assets, receiver, shares);
     }
 
     /// @inheritdoc IERC7540Redeem
