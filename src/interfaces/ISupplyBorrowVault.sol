@@ -14,6 +14,12 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
         uint256 claimableAssets;
     }
 
+    struct StrategyExecutionData {
+        uint256 borrowAmount;
+        uint256 depositAmount;
+        uint256 minSharesRequired;
+    }
+
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
