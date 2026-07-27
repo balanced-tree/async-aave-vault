@@ -236,6 +236,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         if (msg.sender != owner && !_operators[owner][msg.sender]) revert UNAUTHORIZED();
 
+        // Escrow the shares into the vault. The shares stay in totalSupply while pending, so pps keeps floating until fulfillment locks it.
+        _transfer(owner, address(this), shares);
+
         emit RedeemRequest(controller, owner, 0, msg.sender, shares);
 
         return 0;
