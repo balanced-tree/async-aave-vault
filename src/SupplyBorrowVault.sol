@@ -181,6 +181,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /// @inheritdoc ISupplyBorrowVault
+    /// @dev The vault manager can set the minimum supply amount so that it can be updated dynamically.
     function setMinSupplyAmount(uint256 minSupplyAmount_) external onlyRole(MANAGER_ROLE) {
         if (minSupplyAmount_ == 0) revert ZERO_AMOUNT();
         _minSupplyAmount = minSupplyAmount_;
@@ -189,7 +190,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /*//////////////////////////////////////////////////////////////
-                            EXTERNAL FUNCTIONS
+                          EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     /// @inheritdoc IERC4626
     function deposit(uint256 assets, address receiver) external override nonReentrant returns (uint256 shares) {
@@ -531,14 +532,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _accountedIdleAssets += assetsReceived;
 
         // Supply any idle above the target buffer to Aave.
-        // TODO: _rebalanceIdleAssetsToAave();
+        _rebalanceIdleAssetsToAave();
 
         // Emit event
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
     /*//////////////////////////////////////////////////////////////
-                     AAVE V4 INTERNAL HELPERS
+                       AAVE V4 INTERNAL HELPERS
     //////////////////////////////////////////////////////////////*/
     /**
      * @notice Whether the Aave reserve currently accepts supplies (not paused or frozen).
