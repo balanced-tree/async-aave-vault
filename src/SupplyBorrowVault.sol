@@ -524,4 +524,15 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         }
         return (false, 0);
     }
+
+    /**
+     * @notice Whether the Aave reserve currently accepts supplies (not paused or frozen).
+     * @dev A deposit rebalances excess idle into Aave, so deposits revert while supply is disabled.
+     * @return enabled True if the reserve accepts supplies.
+     */
+    function _supplyEnabled() internal view returns (bool enabled) {
+        // ReserveFlagsMap bits: 0x01 = paused, 0x02 = frozen. Supply requires neither set.
+        uint8 flags = ReserveFlags.unwrap(SPOKE.getReserve(RESERVE_ID).flags);
+        return (flags & 0x03) == 0;
+    }
 }
