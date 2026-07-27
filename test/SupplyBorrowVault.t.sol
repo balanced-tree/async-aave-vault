@@ -9,6 +9,8 @@ import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
 import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
 
 contract SupplyBorrowVaultTest is TestBase {
+    using SafeERC20 for IERC20;
+    
     IERC20 public asset;
     IERC20 public borrowAsset;
 
