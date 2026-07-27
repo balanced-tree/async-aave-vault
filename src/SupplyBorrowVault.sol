@@ -34,6 +34,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /*//////////////////////////////////////////////////////////////
                               CONSTANTS
     //////////////////////////////////////////////////////////////*/
+    uint256 private constant WAD = 1e18;
     uint256 private constant VIRTUAL_ASSETS = 1;
     uint256 private constant VIRTUAL_SHARES = 1;
     uint256 private constant BPS_PRECISION = 10_000;
