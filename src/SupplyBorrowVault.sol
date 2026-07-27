@@ -65,6 +65,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice WAD-scaled weighted average cost basis per share for each account.
     mapping(address shareHolder => uint256 costBasis) public costBasisPerShare;
 
+    /// @notice Redeem requests for each controller.
+    mapping(address controller => RedeemRequestData redeemRequest) private _redeemRequests;
+
     mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
 
     /*/////////////////// IMMUTABLE STATE ////////////////////////*/
@@ -238,6 +241,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         // Escrow the shares into the vault. The shares stay in totalSupply while pending, so pps keeps floating until fulfillment locks it.
         _transfer(owner, address(this), shares);
+
+        _redeemRequests[controller].pendingShares += shares;
 
         emit RedeemRequest(controller, owner, 0, msg.sender, shares);
 
