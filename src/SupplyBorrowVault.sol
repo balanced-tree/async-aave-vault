@@ -62,6 +62,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
 
+    /// @notice The amount of assets reserved for withdrawals of fulfilled (cliamable redeem requests).
+    uint256 private _reservedAssets;
+
     /// @notice WAD-scaled weighted average cost basis per share for each account.
     mapping(address shareHolder => uint256 costBasis) public costBasisPerShare;
 
@@ -258,6 +261,22 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     {
         if (assets == 0) revert ZERO_AMOUNT();
         if (receiver == address(0)) revert ZERO_ADDRESS();
+
+        if (msg.sender != controller && !_operators[controller][msg.sender]) revert UNAUTHORIZED();
+
+        RedeemRequestData storage request = _redeemRequests[controller];
+        uint256 claimableAssets = request.claimableAssets;
+        if (assets > claimableAssets) revert INVALID_AMOUNT();
+
+        shares = Math.mulDiv(assets, request.claimableShares, claimableAssets, Math.Rounding.Ceil);
+
+        request.claimableAssets = claimableAssets - assets;
+        request.claimableShares -= shares;
+        _reservedAssets -= assets;
+
+        _transferOut(receiver, assets);
+
+        emit Withdraw(msg.sender, receiver, controller, assets, shares);
     }
 
     /// @inheritdoc IERC4626
