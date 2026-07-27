@@ -346,12 +346,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// @inheritdoc IERC4626
     function maxWithdraw(address owner) public view override returns (uint256) {
-        return 0; // TODO
+        return _redeemRequests[owner].claimableAssets;
     }
 
     /// @inheritdoc IERC4626
     function maxRedeem(address owner) public view override returns (uint256) {
-        return 0; // TODO
+        return _redeemRequests[owner].claimableShares;
     }
 
     /// @inheritdoc IERC4626
@@ -402,7 +402,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         view
         returns (uint256 pendingShares)
     {
-        return 0; // TODO
+        return _redeemRequests[controller].pendingShares;
     }
 
     /// @inheritdoc IERC7540Redeem
