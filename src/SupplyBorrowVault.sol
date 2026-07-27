@@ -152,6 +152,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // Set Hub address
         HUB_ADDRESS = address(reserve.hub);
 
+        // Set target idle BPS
+        if (targetIdleBps_ > MAX_TARGET_IDLE_BPS || targetIdleBps_ == 0) revert INVALID_AMOUNT();
+        targetIdleBps = targetIdleBps_;
+
         // Set performance fee
         if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = performanceFee_;
