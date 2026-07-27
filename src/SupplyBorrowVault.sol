@@ -75,6 +75,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice Contract initialization.
     /// @param asset_ The underlying asset address.
     /// @param admin_ The address of the initial admin.
+    /// @param spokeAddress_ Address of the Aave Spoke contract.
     /// @param treasury_ The address to which fee funds will be transferred.
     /// @param performanceFee_ The initial performance fee (in basis points)
     /// @param name_ The name of the vault.
@@ -83,6 +84,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         address asset_,
         address admin_,
         address treasury_,
+        address spokeAddress_,
         uint256 performanceFee_,
         string memory name_,
         string memory symbol_
