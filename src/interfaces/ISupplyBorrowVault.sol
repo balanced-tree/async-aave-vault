@@ -26,6 +26,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     error INVALID_MANAGER();
     error NOT_IMPLEMENTED();
     error INVALID_OPERATOR();
+    error MAX_MINT_EXCEEDED();
     error INVALID_FEE_AMOUNT();
     error MAX_DEPOSIT_EXCEEDED();
 
