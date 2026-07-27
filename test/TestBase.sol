@@ -55,20 +55,30 @@ abstract contract TestBase is Test {
     string[] public tokenKeys = [GHO_KEY, USDC_KEY, USDT_KEY, WETH_KEY, WBTC_KEY];
     mapping(uint64 chainId => mapping(string tokenKey => address token)) public tokens;
 
+    // Spoke addresses
+    address public constant ETH_MAIN_SPOKE_ADDRESS = 0x94e7A5dCbE816e498b89aB752661904E2F56c485;
+
+    // Downstream strategy vaults
+    address public constant ETH_MORPHO_VAULT = 0xdd0f28e19C1780eb6396170735D45153D261490d; // USDC ERC4626
+
+    // Reserve IDs
+    uint256 public constant WETH_RESERVE_ID = 1;
+    uint256 public constant WBTC_RESERVE_ID = 3;
+    uint256 public constant USDC_RESERVE_ID = 7;
+    uint256 public constant USDT_RESERVE_ID = 8;
+    uint256 public constant GHO_RESERVE_ID = 13;
+
+    mapping(uint64 chainId => address spokeAddress) public spokeAddresses;
+
     function setUp() public virtual {
         _prepareForks();
 
         _makeTestAccounts();
 
         _setTokens();
-        _fundTestAccounts(1000 ether);
-    }
+        _fundTestAccounts(100 ether);
 
-    function _prepareForks() internal {
-        forks[ETH] = vm.createSelectFork(ethereumRpcUrl);
-
-        rpcURLs[ETH] = ethereumRpcUrl;
-        // rpcURLs[BASE] = baseRpcUrl;
+        spokeAddresses[ETH] = ETH_MAIN_SPOKE_ADDRESS;
     }
 
     function _makeTestAccounts() internal {
@@ -95,6 +105,13 @@ abstract contract TestBase is Test {
         treasury = makeAddr("treasury");
         vm.makePersistent(treasury);
         vm.label(treasury, "Protocol Treasury");
+    }
+
+    function _prepareForks() internal {
+        forks[ETH] = vm.createSelectFork(ethereumRpcUrl);
+
+        rpcURLs[ETH] = ethereumRpcUrl;
+        // rpcURLs[BASE] = baseRpcUrl;
     }
 
     function _setTokens() internal {
@@ -125,5 +142,4 @@ abstract contract TestBase is Test {
             }
         }
     }
-
 }
