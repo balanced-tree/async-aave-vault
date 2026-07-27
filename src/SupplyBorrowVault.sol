@@ -548,4 +548,28 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         ASSET.safeIncreaseAllowance(SPOKE_ADDRESS, amountToSupply);
         SPOKE.supply(RESERVE_ID, amountToSupply, address(this));
     }
+
+    /**
+     * @notice Performs a rebalance operation to supply excess idle assets above the target amount into Aave.
+     */
+    function _rebalanceIdleAssetsToAave() internal {
+        uint256 total = totalAssets();
+
+        uint256 targetIdle = Math.mulDiv(total, _targetIdleBps, BPS_PRECISION, Math.Rounding.Floor);
+
+        uint256 idle = _accountedIdleAssets;
+
+        if (idle <= targetIdle) {
+            return;
+        }
+
+        uint256 excessIdle = idle - targetIdle;
+
+        if (excessIdle < minSupplyAmount) {
+            return;
+        }
+
+        _accountedIdleAssets -= excessIdle;
+        _supplyToAave(excessIdle);
+    }
 }
