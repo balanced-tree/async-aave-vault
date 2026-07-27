@@ -79,6 +79,23 @@ contract SupplyBorrowVaultTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
+                           HELPER FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    function _depositAs(address user, uint256 amount) internal returns (uint256 shares) {
+        vm.startPrank(user);
+        asset.forceApprove(address(vault), amount);
+        shares = vault.deposit(amount, user);
+        vm.stopPrank();
+    }
+
+    function _mintAs(address user, uint256 shares) internal returns (uint256 assets) {
+        vm.startPrank(user);
+        asset.forceApprove(address(vault), shares);
+        assets = vault.mint(shares, user);
+        vm.stopPrank();
+    }
+
+    /*//////////////////////////////////////////////////////////////
                         COST BASIS TESTS
     //////////////////////////////////////////////////////////////*/
     function test_CostBasis_firstDeposit() public {
