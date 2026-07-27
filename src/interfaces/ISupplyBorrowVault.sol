@@ -23,6 +23,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
+    error HF_TOO_LOW();
     error ZERO_AMOUNT();
     error ZERO_SHARES();
     error ZERO_ADDRESS();
