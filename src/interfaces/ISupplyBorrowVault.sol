@@ -36,6 +36,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     event managerSet(address indexed newManager);
     event performanceFeeSet(uint256 indexed newFee);
     event targetIdleBpsSet(uint256 indexed newTargetIdleBps);
+    event minSupplyAmountSet(uint256 indexed newMinSupplyAmount);
     event CostBasisUpdated(address indexed shareHolder, uint256 costBasisPerShare);
 
     /*//////////////////////////////////////////////////////////////
@@ -61,4 +62,11 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @dev Only the default admin can set the target ratio
      */
     function setTargetIdleBps(uint256 targetIdleBps) external;
+
+    /**
+     * @notice Set the minimum amount of idle assets to supply to Aave to avoid dust size supply() calls
+     * @param minSupplyAmount_ The minimum amount of idle assets to supply
+     * @dev Only the vault manager can set the minimum amount of idle assets to supply
+     */
+    function setMinSupplyAmount(uint256 minSupplyAmount_) external;
 }
