@@ -56,6 +56,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice The target ratio of funds to be kept idle in the vault in basis points.
     uint256 private _targetIdleBps;
 
+    /// @notice The minimum amount of idle assets to supply to Aave to avoid dust size supply() calls.
+    uint256 private _minSupplyAmount;
+
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
 
@@ -175,6 +178,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _targetIdleBps = targetIdleBps_;
 
         emit targetIdleBpsSet(targetIdleBps_);
+    }
+
+    /// @inheritdoc ISupplyBorrowVault
+    function setMinSupplyAmount(uint256 minSupplyAmount_) external onlyRole(MANAGER_ROLE) {
+        if (minSupplyAmount_ == 0) revert ZERO_AMOUNT();
+        _minSupplyAmount = minSupplyAmount_;
+
+        emit minSupplyAmountSet(minSupplyAmount_);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -565,7 +576,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         uint256 excessIdle = idle - targetIdle;
 
-        if (excessIdle < minSupplyAmount) {
+        if (excessIdle < _minSupplyAmount) {
             return;
         }
 
