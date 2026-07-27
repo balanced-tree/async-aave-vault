@@ -17,6 +17,9 @@ contract SupplyBorrowVaultTest is TestBase {
     IERC20 public asset;
     IERC20 public borrowAsset;
 
+    ISpoke public spoke;
+    IERC4626 public downstreamVault;
+
     SupplyBorrowVault public vault;
     string public name = "SupplyBorrowVault";
     string public symbol = "SBV";
