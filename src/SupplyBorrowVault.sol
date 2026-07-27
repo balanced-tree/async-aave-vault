@@ -69,6 +69,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     address public immutable SPOKE_ADDRESS;
     address public immutable SPOKE_ORACLE_ADDRESS;
 
+    uint256 public immutable RESERVE_ID;
+    uint8 public immutable RESERVE_DECIMALS;
+
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -77,6 +80,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @param admin_ The address of the initial admin.
     /// @param treasury_ The address to which fee funds will be transferred.
     /// @param spokeAddress_ Address of the Aave Spoke contract.
+    /// @param aaveReserveId_ The Aave reserve ID of the supplied asset.
     /// @param performanceFee_ The initial performance fee (in basis points)
     /// @param name_ The name of the vault.
     /// @param symbol_ The symbol of the share token.
@@ -85,6 +89,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         address admin_,
         address treasury_,
         address spokeAddress_,
+        uint256 aaveReserveId_,
         uint256 performanceFee_,
         string memory name_,
         string memory symbol_
@@ -115,6 +120,17 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         SPOKE_ADDRESS = spokeAddress_;
         SPOKE = ISpoke(spokeAddress_);
         SPOKE_ORACLE_ADDRESS = SPOKE.ORACLE();
+
+        // Validate and set Reserve details
+        if (aaveReserveId_ == borrowReserveId) revert INVALID_ASSET();
+        RESERVE_ID = aaveReserveId;
+        ISpoke.Reserve memory reserve = SPOKE.getReserve(aaveReserveId_);
+        // TODO: Check if reserve underlying must be asset
+        if (reserve.underlying != address(ASSET)) revert INVALID_ASSET();
+        RESERVE_DECIMALS = reserve.decimals;
+
+        // Set Hub address
+        HUB_ADDRESS = address(reserve.hub);
 
         // Set performance fee
         if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();

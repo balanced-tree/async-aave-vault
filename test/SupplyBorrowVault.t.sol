@@ -24,7 +24,7 @@ contract SupplyBorrowVaultTest is TestBase {
         asset = IERC20(tokens[ETH][USDT_KEY]);
         borrowAsset = IERC20(tokens[ETH][USDC_KEY]);
 
-        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], 3000, name, symbol);
+        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, name, symbol);
     }
 
     function testConstructor() public view {
