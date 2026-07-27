@@ -32,7 +32,12 @@ contract SupplyBorrowVaultTest is TestBase {
         asset = IERC20(tokens[ETH][USDT_KEY]);
         borrowAsset = IERC20(tokens[ETH][USDC_KEY]);
 
-        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, 3000, name, symbol);
+        spoke = ISpoke(spokeAddresses[ETH]);
+        downstreamVault = IERC4626(ETH_MORPHO_VAULT);
+
+        vault = new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, 3000, name, symbol
+        );
     }
 
     function test_Constructor() public view {
@@ -63,10 +68,10 @@ contract SupplyBorrowVaultTest is TestBase {
         vault.setTargetIdleBps(4000);
 
         vm.startPrank(admin);
-        
+
         vm.expectRevert();
         vault.setTargetIdleBps(7000);
-        
+
         vault.setTargetIdleBps(4000);
         vm.stopPrank();
         assertEq(vault.targetIdleBps(), 4000);
