@@ -24,11 +24,12 @@ contract SupplyBorrowVaultTest is TestBase {
         asset = IERC20(tokens[ETH][USDT_KEY]);
         borrowAsset = IERC20(tokens[ETH][USDC_KEY]);
 
-        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, name, symbol);
+        vault = new SupplyBorrowVault(tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, 3000, name, symbol);
     }
 
     function testConstructor() public view {
         assertEq(vault.asset(), tokens[ETH][USDT_KEY]);
+        assertEq(vault.SPOKE_ADDRESS(), spokeAddresses[ETH]);
         assertEq(vault.name(), name);
         assertEq(vault.symbol(), symbol);
     }
@@ -45,6 +46,22 @@ contract SupplyBorrowVaultTest is TestBase {
         vm.prank(admin);
         vault.setManager(alice);
         assertEq(vault.manager(), alice);
+    }
+
+    function test_SetTargetIdleBps() public {
+        assertEq(vault.targetIdleBps(), 3000);
+
+        vm.expectRevert();
+        vault.setTargetIdleBps(4000);
+
+        vm.startPrank(admin);
+        
+        vm.expectRevert();
+        vault.setTargetIdleBps(7000);
+        
+        vault.setTargetIdleBps(4000);
+        vm.stopPrank();
+        assertEq(vault.targetIdleBps(), 4000);
     }
 
     function test_SetPerformanceFee() public {

@@ -109,6 +109,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         address treasury_,
         address spokeAddress_,
         uint256 aaveReserveId_,
+        uint256 targetIdleBps_,
         uint256 performanceFee_,
         string memory name_,
         string memory symbol_
