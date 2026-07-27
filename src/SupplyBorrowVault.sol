@@ -379,7 +379,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /*//////////////////////////////////////////////////////////////
-                            INTERNAL FUNCTIONS
+                        ERC20 INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     /**
      * @notice Override of ERC20._update to snapshot weighted-average cost basis per share.
@@ -436,6 +436,48 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /**
+     * @notice Performs a transfer in of underlying assets.
+     * @param from Address from which to transfer the assets.
+     * @param assets Amount of assets to transfer.
+     */
+    function _transferIn(address from, uint256 assets) internal {
+        SafeERC20.safeTransferFrom(IERC20(asset()), from, address(this), assets);
+    }
+
+    /**
+     * @notice Performs a transfer out of underlying assets.
+     * @param to Address to which the assets will be transferred.
+     * @param assets Amount of assets to transfer.
+     */
+    function _transferOut(address to, uint256 assets) internal {
+        SafeERC20.safeTransfer(IERC20(asset()), to, assets);
+    }
+
+    /**
+     * @notice Gets the decimals of an asset
+     * @dev A return value of false indicates that the attempt failed in some way.
+     * @param assetAddress The address of the token to query.
+     * @return ok Boolean indicating if the operation was successful.
+     * @return assetDecimals The token's decimals if successful, 0 otherwise.
+     */
+    function _getAssetDecimals(address assetAddress) internal view returns (bool ok, uint8 assetDecimals) {
+        (bool success, bytes memory encodedDecimals) =
+            address(assetAddress).staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
+        if (success && encodedDecimals.length >= 32) {
+            uint256 returnedDecimals = abi.decode(encodedDecimals, (uint256));
+            if (returnedDecimals < type(uint8).max) {
+                // casting to 'uint8' is safe because the returned decimals is a valid uint8
+                // forge-lint: disable-next-line(unsafe-typecast)
+                return (true, uint8(returnedDecimals));
+            }
+        }
+        return (false, 0);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                       ERC4626 INTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    /**
      * @notice Returns the amount of shares that the Vault would exchange for the amount of assets provided, in an ideal
      * scenario where all the conditions are met.
      * @param assets The amount of assets to be converted.
@@ -455,24 +497,6 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
      */
     function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
         return Math.mulDiv(shares, totalAssets() + VIRTUAL_ASSETS, totalSupply() + VIRTUAL_SHARES, rounding);
-    }
-
-    /**
-     * @notice Performs a transfer in of underlying assets.
-     * @param from Address from which to transfer the assets.
-     * @param assets Amount of assets to transfer.
-     */
-    function _transferIn(address from, uint256 assets) internal {
-        SafeERC20.safeTransferFrom(IERC20(asset()), from, address(this), assets);
-    }
-
-    /**
-     * @notice Performs a transfer out of underlying assets.
-     * @param to Address to which the assets will be transferred.
-     * @param assets Amount of assets to transfer.
-     */
-    function _transferOut(address to, uint256 assets) internal {
-        SafeERC20.safeTransfer(IERC20(asset()), to, assets);
     }
 
     /**
@@ -502,27 +526,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         emit Deposit(msg.sender, receiver, assets, shares);
     }
 
-    /**
-     * @notice Gets the decimals of an asset
-     * @dev A return value of false indicates that the attempt failed in some way..
-     * @param assetAddress The address of the token to query.
-     * @return ok Boolean indicating if the operation was successful.
-     * @return assetDecimals The token's decimals if successful, 0 otherwise.
-     */
-    function _getAssetDecimals(address assetAddress) internal view returns (bool ok, uint8 assetDecimals) {
-        (bool success, bytes memory encodedDecimals) =
-            address(assetAddress).staticcall(abi.encodeCall(IERC20Metadata.decimals, ()));
-        if (success && encodedDecimals.length >= 32) {
-            uint256 returnedDecimals = abi.decode(encodedDecimals, (uint256));
-            if (returnedDecimals < type(uint8).max) {
-                // casting to 'uint8' is safe because the returned decimals is a valid uint8
-                // forge-lint: disable-next-line(unsafe-typecast)
-                return (true, uint8(returnedDecimals));
-            }
-        }
-        return (false, 0);
-    }
-
+    /*//////////////////////////////////////////////////////////////
+                     AAVE V4 INTERNAL HELPERS
+    //////////////////////////////////////////////////////////////*/
     /**
      * @notice Whether the Aave reserve currently accepts supplies (not paused or frozen).
      * @dev A deposit rebalances excess idle into Aave, so deposits revert while supply is disabled.
@@ -532,5 +538,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // ReserveFlagsMap bits: 0x01 = paused, 0x02 = frozen. Supply requires neither set.
         uint8 flags = ReserveFlags.unwrap(SPOKE.getReserve(RESERVE_ID).flags);
         return (flags & 0x03) == 0;
+    }
+
+    /**
+     * @notice Performs a supply operation to the Aave Spoke.
+     * @param amountToSupply The amount to supply.
+     */
+    function _supplyToAave(uint256 amountToSupply) internal {
+        ASSET.safeIncreaseAllowance(SPOKE_ADDRESS, amountToSupply);
+        SPOKE.supply(RESERVE_ID, amountToSupply, address(this));
     }
 }
