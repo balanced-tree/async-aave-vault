@@ -48,9 +48,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /*//////////////////////////////////////////////////////////////
                                 STATE
     //////////////////////////////////////////////////////////////*/
-
+    /// @notice The manager of the vault.
     address public manager;
 
+    /// @notice The performance fee (in basis points)
     uint256 public performanceFee;
 
     /// @notice The target ratio of funds to be kept idle in the vault in basis points.
@@ -71,24 +72,37 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice Redeem requests for each controller.
     mapping(address controller => RedeemRequestData redeemRequest) private _redeemRequests;
 
+    /// @notice Operators for each controller.
     mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
 
     /*/////////////////// IMMUTABLE STATE ////////////////////////*/
-
+    /// @notice Underlying asset.
     IERC20 public immutable ASSET;
 
     /// @notice Decimals of the underlying asset (and the share token)
     uint8 public immutable UNDERLYING_DECIMALS;
 
-    address private immutable TREASURY;
-
+    /// @notice Interface to the Aave Spoke contract.
     ISpoke public immutable SPOKE;
-    address public immutable HUB_ADDRESS;
+    /// @notice Address of the Aave Spoke contract.
     address public immutable SPOKE_ADDRESS;
+    /// @notice Address of the Aave Spoke Oracle contract.
     address public immutable SPOKE_ORACLE_ADDRESS;
 
+    /// @notice Identifier of the Aave Reserve to supply.
     uint256 public immutable RESERVE_ID;
-    uint8 public immutable RESERVE_DECIMALS;
+
+    /// @notice Borrow asset.
+    IERC20 public immutable BORROW_ASSET;
+
+    /// @notice Decimals of the borrow asset.
+    uint8 public immutable BORROW_DECIMALS;
+
+    /// @notice Identifier of the Aave Reserve to borrow.
+    uint256 public immutable BORROW_RESERVE_ID;
+
+    /// @notice Address to which fee funds will be transferred.
+    address private immutable TREASURY;
 
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
@@ -98,9 +112,11 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @param admin_ The address of the initial admin.
     /// @param treasury_ The address to which fee funds will be transferred.
     /// @param spokeAddress_ Address of the Aave Spoke contract.
-    /// @param aaveReserveId_ The Aave reserve ID of the supplied asset.
+    /// @param downstreamVault_ The address of the downstream vault.
+    /// @param aaveReserveId_ The identifier of the Aave Reserve to supply.
+    /// @param borrowReserveId_ The identifier of the Aave Reserve to borrow.
+    /// @param targetIdleBps_ The target ratio of funds to be kept available in the vault for small withdrawals in basis points.
     /// @param performanceFee_ The initial performance fee (in basis points)
-    /// @param targetIdleBps_ The initial target ratio of funds to be kept idle in the vault in basis points.
     /// @param name_ The name of the vault.
     /// @param symbol_ The symbol of the share token.
     constructor(
@@ -108,7 +124,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         address admin_,
         address treasury_,
         address spokeAddress_,
+        address downstreamVault_,
         uint256 aaveReserveId_,
+        uint256 borrowReserveId_,
         uint256 targetIdleBps_,
         uint256 performanceFee_,
         string memory name_,
@@ -142,15 +160,16 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         SPOKE_ORACLE_ADDRESS = SPOKE.ORACLE();
 
         // Validate and set Reserve details
-        // TODO: if (aaveReserveId_ == borrowReserveId) revert INVALID_ASSET();
-        RESERVE_ID = aaveReserveId_;
-        ISpoke.Reserve memory reserve = SPOKE.getReserve(aaveReserveId_);
-        // TODO: Check if reserve underlying must be asset
-        if (reserve.underlying != address(ASSET)) revert INVALID_ASSET();
-        RESERVE_DECIMALS = reserve.decimals;
+        if (aaveReserveId_ == borrowReserveId_) revert INVALID_ASSET();
 
-        // Set Hub address
-        HUB_ADDRESS = address(reserve.hub);
+        ISpoke.Reserve memory reserve = SPOKE.getReserve(aaveReserveId_);
+        if (reserve.underlying != address(ASSET)) revert INVALID_ASSET();
+        // Reserve asset decimals equal underlying asset decimals
+        RESERVE_ID = aaveReserveId_;
+
+        BORROW_RESERVE_ID = borrowReserveId_;
+        ISpoke.Reserve memory borrowReserve = SPOKE.getReserve(borrowReserveId_);
+        BORROW_DECIMALS = borrowReserve.decimals;
 
         // Set target idle BPS
         if (targetIdleBps_ > MAX_TARGET_IDLE_BPS || targetIdleBps_ == 0) revert INVALID_AMOUNT();
@@ -527,10 +546,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
      * scenario where all the conditions are met.
      * @param assets The amount of assets to be converted.
      * @param rounding The direction in which to round division.
-     * @return The equivalent amount of shares.
+     * @return shares The equivalent amount of shares.
      */
-    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256) {
-        return Math.mulDiv(assets, totalSupply() + VIRTUAL_SHARES, totalAssets() + VIRTUAL_ASSETS, rounding);
+    function _convertToShares(uint256 assets, Math.Rounding rounding) internal view returns (uint256 shares) {
+        shares = Math.mulDiv(assets, totalSupply() + VIRTUAL_SHARES, totalAssets() + VIRTUAL_ASSETS, rounding);
     }
 
     /**
@@ -538,10 +557,10 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
      * scenario where all the conditions are met.
      * @param shares The amount of shares to be converted.
      * @param rounding The directio in which to round division.
-     * @return The equivalent amount of assets.
+     * @return assets The equivalent amount of assets.
      */
-    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256) {
-        return Math.mulDiv(shares, totalAssets() + VIRTUAL_ASSETS, totalSupply() + VIRTUAL_SHARES, rounding);
+    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view returns (uint256 assets) {
+        assets = Math.mulDiv(shares, totalAssets() + VIRTUAL_ASSETS, totalSupply() + VIRTUAL_SHARES, rounding);
     }
 
     /**
@@ -553,9 +572,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function _deposit(uint256 assets, address receiver, uint256 shares) internal {
         // Pull assets and account only the actual received delta
         uint256 idleBefore = ASSET.balanceOf(address(this));
-
         _transferIn(msg.sender, assets);
-
         uint256 assetsReceived = ASSET.balanceOf(address(this)) - idleBefore;
 
         /// @dev _update() snapshots the depositor's cost basis. The cost basis must be the price-per-share before this deposit is reflected in the vault's accounting.

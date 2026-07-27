@@ -36,7 +36,7 @@ contract SupplyBorrowVaultTest is TestBase {
         downstreamVault = IERC4626(ETH_MORPHO_VAULT);
 
         vault = new SupplyBorrowVault(
-            tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], USDT_RESERVE_ID, 3000, 3000, name, symbol
+            tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], ETH_MORPHO_VAULT, USDT_RESERVE_ID, USDC_RESERVE_ID, 3000, 3000, name, symbol
         );
     }
 
