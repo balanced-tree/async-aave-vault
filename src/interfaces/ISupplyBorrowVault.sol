@@ -36,6 +36,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     error MAX_MINT_EXCEEDED();
     error INVALID_FEE_AMOUNT();
     error MAX_DEPOSIT_EXCEEDED();
+    error INSUFFICIENT_LIQUIDITY();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
