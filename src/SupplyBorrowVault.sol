@@ -644,4 +644,29 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         (, amountReceived) =
             SPOKE.withdraw({reserveId: RESERVE_ID, amount: amountToWithdraw, onBehalfOf: address(this)});
     }
+
+    /**
+     * @notice Performs a rebalance operation to ensure there are enough idle assets available for withdrawals.
+     * @param assetsNeeded the amount of idle assets required for withdrawal.
+     */
+    function _ensureIdleAssets(uint256 assetsNeeded) internal {
+        uint256 idle = _accountedIdleAssets;
+
+        if (idle >= assetsNeeded) {
+            return;
+        }
+
+        // While leveraged, never pull collateral from Aave to fund redemptions
+        // collateral against open debt lowers HF. The manager must keep the idle buffer topped up via deleverage() (which repays debt before freeing collateral).
+        if (SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this)) != 0) revert INSUFFICIENT_LIQUIDITY();
+
+        uint256 shortfall = assetsNeeded - idle;
+
+        uint256 withdrawn = _withdrawFromAave(shortfall);
+
+        // Depending on Aave liquidity, withdrawn may be less than requested.
+        if (withdrawn < shortfall) revert INSUFFICIENT_LIQUIDITY();
+
+        _accountedIdleAssets += withdrawn;
+    }
 }
