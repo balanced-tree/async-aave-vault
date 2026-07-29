@@ -669,4 +669,25 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         _accountedIdleAssets += withdrawn;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                       CONVERSION HELPERS
+    //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Converts a borrow asset amount to its equivalent value in asset token units.
+     * @dev Derived from Aave (amount * price * 10^(18 - decimals))
+     * @param borrowAmount Amount in borrow token units.
+     * @param borrowPrice Oracle price of the borrow reserve.
+     * @param assetPrice Oracle price of the asset (collateral) reserve.
+     * @param rounding Rounding direction (Floor for assets held, Ceil for debt).
+     */
+    function _borrowToAsset(uint256 borrowAmount, uint256 borrowPrice, uint256 assetPrice, Math.Rounding rounding)
+        internal
+        view
+        returns (uint256)
+    {
+        return Math.mulDiv(
+            borrowAmount * borrowPrice, 10 ** RESERVE_DECIMALS, assetPrice * (10 ** BORROW_RESERVE_DECIMALS), rounding
+        );
+    }
 }
