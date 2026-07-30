@@ -353,6 +353,21 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @inheritdoc IERC4626
     function totalAssets() public view override returns (uint256 assets) {
         uint256 assets = _accountedIdleAssets + SPOKE.getUserSuppliedAssets(RESERVE_ID, address(this));
+
+        uint256 borrowAssets = _accountedBorrowAssets;
+
+        uint256 debt = SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this));
+
+        // If there's no borrow, we don't need to read the oracle for the borrow asset value conversion.
+        if (borrowAssets != 0 || debt != 0) {
+            uint256 borrowPrice = IPriceOracle(SPOKE_ORACLE_ADDRESS).getReservePrice(BORROW_RESERVE_ID);
+            uint256 assetPrice = IPriceOracle(SPOKE_ORACLE_ADDRESS).getReservePrice(RESERVE_ID);
+
+            assets += _borrowToAsset(borrowAssets, borrowPrice, assetPrice, Math.Rounding.Floor);
+            uint256 debtValue = _borrowToAsset(debt, borrowPrice, assetPrice, Math.Rounding.Ceil);
+
+            assets = assets > debtValue ? assets - debtValue : 0;
+        }
     }
 
     /// @inheritdoc IERC4626
