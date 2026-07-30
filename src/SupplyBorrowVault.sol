@@ -671,7 +671,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /*//////////////////////////////////////////////////////////////
-                       CONVERSION HELPERS
+                        CONVERSION HELPERS
     //////////////////////////////////////////////////////////////*/
     /**
      * @notice Converts a borrow asset amount to its equivalent value in asset token units.
