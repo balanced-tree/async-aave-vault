@@ -64,6 +64,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
 
+    /// @notice The amount of internally accounted borrowed assets.
+    uint256 private _accountedBorrowAssets;
+
     /// @notice The amount of assets reserved for withdrawals of fulfilled (cliamable redeem requests).
     uint256 private _reservedAssets;
 
