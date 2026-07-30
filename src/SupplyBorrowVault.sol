@@ -42,6 +42,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     uint256 private constant BPS_PRECISION = 10_000;
     uint256 private constant MAX_TARGET_IDLE_BPS = 4000;
     uint256 private constant MAX_PERFORMANCE_FEE = 5000;
+    uint256 private constant MIN_HEALTH_FACTOR = 1.333e18;
 
     bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
@@ -218,6 +219,14 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _minSupplyAmount = minSupplyAmount_;
 
         emit minSupplyAmountSet(minSupplyAmount_);
+    }
+
+    /// @inheritdoc ISupplyBorrowVault
+    function setMinHealthFactor(uint256 minHealthFactor) external onlyRole(MANAGER_ROLE) {
+        if (minHealthFactor < MIN_HEALTH_FACTOR) revert INVALID_AMOUNT();
+        _minHealthFactor = minHealthFactor;
+
+        emit minHealthFactorSet(minHealthFactor);
     }
 
     /*//////////////////////////////////////////////////////////////
