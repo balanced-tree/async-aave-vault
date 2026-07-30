@@ -77,4 +77,11 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @dev Only the vault manager can set the minimum amount of idle assets to supply
      */
     function setMinSupplyAmount(uint256 minSupplyAmount_) external;
+
+    /**
+     * @notice Set the minimum health factor
+     * @param minHealthFactor The minimum health factor
+     * @dev Only the vault manager can set the minimum health factor
+     */
+    function setMinHealthFactor(uint256 minHealthFactor) external;
 }
