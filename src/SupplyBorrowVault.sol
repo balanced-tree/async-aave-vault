@@ -720,6 +720,27 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         );
     }
 
+    /**
+     * @notice Performs a borrow operation from the Aave Spoke.
+     * @param amountToBorrow The amount to borrow.
+     * @return borrowedAssets The amount of assets borrowed.
+     */
+    function _borrowFromAave(uint256 amountToBorrow) internal returns (uint256 borrowedAssets) {
+        // Ensure the supplied reserve counts as collateral
+        SPOKE.setUsingAsCollateral(RESERVE_ID, true, address(this));
+
+        uint256 hf = _computeHealthFactor(amountToBorrow);
+
+        if (hf < MIN_HEALTH_FACTOR) revert HF_TOO_LOW();
+
+        (, borrowedAssets) = SPOKE.borrow(BORROW_RESERVE_ID, amountToBorrow, address(this));
+
+        // Track the borrowed funds
+        _accountedBorrowAssets += borrowedAssets;
+
+        // TODO: Handle borrowing wrapped native assets
+    }
+
     /*//////////////////////////////////////////////////////////////
                         CONVERSION HELPERS
     //////////////////////////////////////////////////////////////*/
