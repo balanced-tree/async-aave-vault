@@ -803,4 +803,16 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         _underlyingVaultShares += sharesReceived;
     }
+
+    /**
+     * @notice Redeems underlying vault shares back into held BORROW funds.
+     * @dev Reverse of _depositToUnderlyingVault() used by the deleverage path to source repay funds.
+     * @param shares The underlying vault shares to redeem.
+     * @return assetsReceived The BORROW asset received.
+     */
+    function _withdrawFromUnderlyingVault(uint256 shares) internal returns (uint256 assetsReceived) {
+        _underlyingVaultShares -= shares;
+        assetsReceived = UNDERLYING_VAULT.redeem(shares, address(this), address(this));
+        _accountedBorrowAssets += assetsReceived;
+    }
 }
