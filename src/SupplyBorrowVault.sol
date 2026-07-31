@@ -17,6 +17,7 @@ import {ISupplyBorrowVault} from "./interfaces/ISupplyBorrowVault.sol";
 
 // Aave
 import {WadRayMath} from "aave-v4/libraries/math/WadRayMath.sol";
+import {IPriceOracle} from "aave-v4/spoke/interfaces/IPriceOracle.sol";
 import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
 // Centrifuge
