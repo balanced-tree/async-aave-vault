@@ -23,20 +23,21 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
-    error HF_TOO_LOW();
     error ZERO_AMOUNT();
     error ZERO_SHARES();
     error ZERO_ADDRESS();
-    error UNAUTHORIZED();
     error INVALID_ASSET();
     error INVALID_AMOUNT();
     error INVALID_MANAGER();
-    error NOT_IMPLEMENTED();
-    error INVALID_OPERATOR();
     error MAX_MINT_EXCEEDED();
-    error INVALID_FEE_AMOUNT();
     error MAX_DEPOSIT_EXCEEDED();
     error INSUFFICIENT_LIQUIDITY();
+    error INSUFFICIENT_SHARES();
+    error INVALID_FEE_AMOUNT();
+    error INVALID_OPERATOR();
+    error NOT_IMPLEMENTED();
+    error UNAUTHORIZED();
+    error HF_TOO_LOW();
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
