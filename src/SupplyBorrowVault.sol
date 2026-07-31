@@ -741,6 +741,17 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // TODO: Handle borrowing wrapped native assets
     }
 
+    /**
+     * @notice Repays Aave debt using held borrow asset funds.
+     * @param amount The amount of debt to repay (capped at outstanding debt by Aave).
+     * @return repaid The actual amount of borrow asset repaid.
+     */
+    function _repayToAave(uint256 amount) internal returns (uint256 repaid) {
+        BORROW_ASSET.safeIncreaseAllowance(SPOKE_ADDRESS, amount);
+        (, repaid) = SPOKE.repay(BORROW_RESERVE_ID, amount, address(this));
+        _accountedBorrowAssets -= repaid;
+    }
+
     /*//////////////////////////////////////////////////////////////
                         CONVERSION HELPERS
     //////////////////////////////////////////////////////////////*/
@@ -758,7 +769,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         returns (uint256)
     {
         return Math.mulDiv(
-            borrowAmount * borrowPrice, 10 ** RESERVE_DECIMALS, assetPrice * (10 ** BORROW_RESERVE_DECIMALS), rounding
+            borrowAmount * borrowPrice, 10 ** UNDERLYING_DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding
         );
     }
 }
