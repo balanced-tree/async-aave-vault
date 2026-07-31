@@ -85,11 +85,4 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @dev Only the vault manager can set the minimum health factor
      */
     function setMinHealthFactor(uint256 minHealthFactor) external;
-
-    /**
-     * @notice Set the underlying vault
-     * @param underlyingVault The address of the underlying vault
-     * @dev Only the vault manager can set the underlying vault
-     */
-    function setUnderlyingVault(address underlyingVault) external;
 }

@@ -241,9 +241,6 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         emit MinHealthFactorSet(minHealthFactor);
     }
-    
-    /// @inheritdoc ISupplyBorrowVault
-    function setUnderlyingVault(address underlyingVault) external onlyRole(MANAGER_ROLE) {}
 
     /*//////////////////////////////////////////////////////////////
                           EXTERNAL FUNCTIONS
