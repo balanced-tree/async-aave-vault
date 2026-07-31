@@ -68,6 +68,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @notice The amount of internally accounted borrowed assets.
     uint256 private _accountedBorrowAssets;
 
+    /// @notice The amount of internally accounted underlying vault shares.
+    uint256 private _underlyingVaultShares;
+
     /// @notice The amount of assets reserved for withdrawals of fulfilled (cliamable redeem requests).
     uint256 private _reservedAssets;
 
@@ -782,5 +785,22 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return Math.mulDiv(
             borrowAmount * borrowPrice, 10 ** DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding
         );
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                        UNDERLYING VAULT FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    /**
+     * @notice Deploys held borrow asset funds into the underlying vault.
+     * @param amount The amount of borrow asset to deposit into the underlying vault.
+     * @return sharesReceived The underlying vault shares minted to this vault.
+     */
+    function _depositToUnderlyingVault(uint256 amount) internal returns (uint256 sharesReceived) {
+        _accountedBorrowAssets -= amount;
+
+        BORROW_ASSET.safeIncreaseAllowance(address(UNDERLYING_VAULT), amount);
+        sharesReceived = UNDERLYING_VAULT.deposit(amount, address(this));
+
+        _underlyingVaultShares += sharesReceived;
     }
 }
