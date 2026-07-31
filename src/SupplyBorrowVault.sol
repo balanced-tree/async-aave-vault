@@ -197,7 +197,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         manager = newManager;
         _grantRole(MANAGER_ROLE, newManager);
-        emit managerSet(newManager);
+        emit ManagerSet(newManager);
     }
 
     /// @inheritdoc ISupplyBorrowVault
@@ -205,7 +205,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (newFee > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = newFee;
 
-        emit performanceFeeSet(newFee);
+        emit PerformanceFeeSet(newFee);
     }
 
     /// @inheritdoc ISupplyBorrowVault
@@ -213,7 +213,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (targetIdleBps_ > MAX_TARGET_IDLE_BPS) revert INVALID_AMOUNT();
         targetIdleBps = targetIdleBps_;
 
-        emit targetIdleBpsSet(targetIdleBps_);
+        emit TargetIdleBpsSet(targetIdleBps_);
     }
 
     /// @inheritdoc ISupplyBorrowVault
@@ -222,7 +222,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (minSupplyAmount_ == 0) revert ZERO_AMOUNT();
         _minSupplyAmount = minSupplyAmount_;
 
-        emit minSupplyAmountSet(minSupplyAmount_);
+        emit MinSupplyAmountSet(minSupplyAmount_);
     }
 
     /// @inheritdoc ISupplyBorrowVault
@@ -230,7 +230,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (minHealthFactor < MIN_HEALTH_FACTOR) revert INVALID_AMOUNT();
         _minHealthFactor = minHealthFactor;
 
-        emit minHealthFactorSet(minHealthFactor);
+        emit MinHealthFactorSet(minHealthFactor);
     }
 
     /*//////////////////////////////////////////////////////////////
