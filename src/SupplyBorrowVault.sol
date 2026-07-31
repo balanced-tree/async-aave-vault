@@ -259,6 +259,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         sharesAcquired = _depositToUnderlyingVault(strategy.depositAmount);
         if (sharesAcquired < strategy.minSharesRequired) revert INSUFFICIENT_SHARES();
+
+        emit StrategyExecuted(sharesAcquired, strategy.borrowAmount);
     }
 
     /*//////////////////////////////////////////////////////////////
