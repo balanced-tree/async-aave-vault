@@ -85,4 +85,11 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @dev Only the vault manager can set the minimum health factor
      */
     function setMinHealthFactor(uint256 minHealthFactor) external;
+
+    /**
+     * @notice Execute a strategy
+     * @param strategy The data for the strategy execution
+     * @dev Only the vault manager can execute a strategy
+     */
+    function executeStrategy(StrategyExecutionData memory strategy) external;
 }
