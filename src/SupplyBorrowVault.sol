@@ -85,7 +85,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     IERC20 public immutable ASSET;
 
     /// @notice Decimals of the underlying asset (and the share token)
-    uint8 public immutable UNDERLYING_DECIMALS;
+    uint8 public immutable DECIMALS;
 
     /// @notice Interface to the Aave Spoke contract.
     ISpoke public immutable SPOKE;
@@ -105,6 +105,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// @notice Identifier of the Aave Reserve to borrow.
     uint256 public immutable BORROW_RESERVE_ID;
+
+    /// @notice Instance of the underlying vault.
+    IERC4626 public immutable UNDERLYING_VAULT;
 
     /// @notice Address to which fee funds will be transferred.
     address private immutable TREASURY;
@@ -150,7 +153,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         // Set asset and precision
         (bool success, uint8 assetDecimals) = _getAssetDecimals(asset_);
-        UNDERLYING_DECIMALS = success ? assetDecimals : 18;
+        DECIMALS = success ? assetDecimals : 18;
         ASSET = IERC20(asset_);
 
         // Set roles
@@ -183,6 +186,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // Set performance fee
         if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = performanceFee_;
+
+        // Set underlying vault
+        if (downstreamVault_ == address(0)) revert ZERO_ADDRESS();
+        if (IERC4626(downstreamVault_).asset() != borrowReserve.underlying) revert INVALID_ASSET();
+        UNDERLYING_VAULT = IERC4626(downstreamVault_);
+        BORROW_ASSET = IERC20(borrowReserve.underlying);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -232,6 +241,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         emit MinHealthFactorSet(minHealthFactor);
     }
+    
+    /// @inheritdoc ISupplyBorrowVault
+    function setUnderlyingVault(address underlyingVault) external onlyRole(MANAGER_ROLE) {}
 
     /*//////////////////////////////////////////////////////////////
                           EXTERNAL FUNCTIONS
@@ -343,7 +355,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     //////////////////////////////////////////////////////////////*/
     /// @inheritdoc IERC20Metadata
     function decimals() public view override(IERC20Metadata, ERC20) returns (uint8) {
-        return UNDERLYING_DECIMALS;
+        return DECIMALS;
     }
 
     /// @inheritdoc IERC4626
@@ -771,7 +783,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         returns (uint256)
     {
         return Math.mulDiv(
-            borrowAmount * borrowPrice, 10 ** UNDERLYING_DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding
+            borrowAmount * borrowPrice, 10 ** DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding
         );
     }
 }
