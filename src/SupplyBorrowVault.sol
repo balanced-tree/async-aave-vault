@@ -352,6 +352,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /// @inheritdoc IERC4626
+    /// @dev totalAssets = idleAsets + assets supplied to Aave + valueOfBorrowedFundsHeld (in asset units) - debtVault (in asset units)
     function totalAssets() public view override returns (uint256 assets) {
         assets = _accountedIdleAssets + SPOKE.getUserSuppliedAssets(RESERVE_ID, address(this));
 
