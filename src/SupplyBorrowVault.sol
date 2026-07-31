@@ -228,7 +228,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @inheritdoc ISupplyBorrowVault
     function setMinHealthFactor(uint256 minHealthFactor) external onlyRole(MANAGER_ROLE) {
         if (minHealthFactor < MIN_HEALTH_FACTOR) revert INVALID_AMOUNT();
-        _minHealthFactor = minHealthFactor;
+        minHealthFactor = minHealthFactor;
 
         emit MinHealthFactorSet(minHealthFactor);
     }
