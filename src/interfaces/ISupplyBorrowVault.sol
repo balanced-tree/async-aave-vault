@@ -87,9 +87,10 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     function setMinHealthFactor(uint256 minHealthFactor) external;
 
     /**
-     * @notice Execute a strategy
-     * @param strategy The data for the strategy execution
+     * @notice Manager leverage step: Execute a strategy to optionally borrow from Aave, then deploy held BORROW funds into the underlying vault.
      * @dev Only the vault manager can execute a strategy
+     * @param strategy The data for the strategy execution
+     * @return sharesAcquired The number of shares acquired from the strategy execution
      */
-    function executeStrategy(StrategyExecutionData memory strategy) external;
+    function executeStrategy(StrategyExecutionData memory strategy) external returns (uint256 sharesAcquired);
 }
