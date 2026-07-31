@@ -45,6 +45,7 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
     event performanceFeeSet(uint256 indexed newFee);
     event targetIdleBpsSet(uint256 indexed newTargetIdleBps);
     event minSupplyAmountSet(uint256 indexed newMinSupplyAmount);
+    event minHealthFactorSet(uint256 indexed newMinHealthFactor);
     event CostBasisUpdated(address indexed shareHolder, uint256 costBasisPerShare);
 
     /*//////////////////////////////////////////////////////////////
