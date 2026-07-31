@@ -697,6 +697,29 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
             SPOKE.withdraw({reserveId: RESERVE_ID, amount: amountToWithdraw, onBehalfOf: address(this)});
     }
 
+    /**
+     * @notice Computes the health factor after a borrow operation.
+     * @param borrowAmount The amount to borrow.
+     * @return hf The health factor.
+     */
+    function _computeHealthFactor(uint256 borrowAmount) internal view returns (uint256 hf) {
+        // Current account data
+        ISpoke.UserAccountData memory currentData = SPOKE.getUserAccountData(address(this));
+
+        // Value the new borrow in Aave units: amount * price * 10^(18 - decimals)
+        /// @dev The borrow asset is priced via its own reserve.
+        uint256 borrowPrice = IPriceOracle(SPOKE_ORACLE_ADDRESS).getReservePrice(BORROW_RESERVE_ID);
+        uint256 borrowValue = borrowAmount * borrowPrice * (10 ** (WadRayMath.WAD_DECIMALS - BORROW_RESERVE_DECIMALS));
+
+        uint256 newTotalDebtValue = currentData.totalDebtValueRay.fromRayUp() + borrowValue;
+        if (newTotalDebtValue == 0) return type(uint256).max;
+
+        // WAD-scaled HF: avgCollateralFactor is returned normalized to WAD
+        hf = Math.mulDiv(
+            currentData.totalCollateralValue, currentData.avgCollateralFactor, newTotalDebtValue, Math.Rounding.Floor
+        );
+    }
+
     /*//////////////////////////////////////////////////////////////
                         CONVERSION HELPERS
     //////////////////////////////////////////////////////////////*/
