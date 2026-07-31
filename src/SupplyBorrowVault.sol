@@ -245,6 +245,22 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         emit MinHealthFactorSet(minHealthFactor);
     }
 
+    /// @inheritdoc ISupplyBorrowVault
+    function executeStrategy(StrategyExecutionData memory strategy)
+        external
+        onlyRole(MANAGER_ROLE)
+        returns (uint256 sharesAcquired)
+    {
+        if (strategy.depositAmount == 0 || strategy.minSharesRequired == 0) revert ZERO_AMOUNT();
+
+        if (strategy.borrowAmount > 0) {
+            _borrowFromAave(strategy.borrowAmount);
+        }
+
+        sharesAcquired = _depositToUnderlyingVault(strategy.depositAmount);
+        if (sharesAcquired < strategy.minSharesRequired) revert INSUFFICIENT_SHARES();
+    }
+
     /*//////////////////////////////////////////////////////////////
                           EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
@@ -782,9 +798,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         view
         returns (uint256)
     {
-        return Math.mulDiv(
-            borrowAmount * borrowPrice, 10 ** DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding
-        );
+        return Math.mulDiv(borrowAmount * borrowPrice, 10 ** DECIMALS, assetPrice * (10 ** BORROW_DECIMALS), rounding);
     }
 
     /*//////////////////////////////////////////////////////////////
