@@ -96,4 +96,13 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @return sharesAcquired The number of shares acquired from the strategy execution
      */
     function executeStrategy(StrategyExecutionData memory strategy) external returns (uint256 sharesAcquired);
+
+    /**
+     * @notice Manager deleverage step: unwind (part of) the leveraged position to refill the idle buffer that funds redemptions.
+     * @dev Only the vault manager can deleverage
+     * @param downstreamShares The number of shares to unwind
+     * @param repayAmount The amount of debt to repay
+     * @param collateralToWithdraw The amount of collateral to withdraw
+     */
+    function deleverage(uint256 downstreamShares, uint256 repayAmount, uint256 collateralToWithdraw) external;
 }
