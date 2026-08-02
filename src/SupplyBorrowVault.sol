@@ -271,7 +271,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (downstreamShares > 0) _withdrawFromUnderlyingVault(downstreamShares);
 
         if (repayAmount > 0) _repayToAave(repayAmount);
-        
+
         if (collateralToWithdraw > 0) {
             uint256 withdrawn = _withdrawFromAave(collateralToWithdraw);
             _accountedIdleAssets += withdrawn;
@@ -280,6 +280,46 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         // Never leave the remaining position below the HF floor
         if (SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this)) != 0) {
             if (_computeHealthFactor(0) < MIN_HEALTH_FACTOR) revert HF_TOO_LOW();
+        }
+    }
+
+    function fulfillRedeem(address controller, uint256 shares)
+        external
+        onlyRole(MANAGER_ROLE)
+        returns (uint256 assets)
+    {
+        if (shares == 0) revert ZERO_SHARES();
+
+        RedeemRequestData storage request = _redeemRequests[controller];
+        uint256 pendingShares = request.pendingShares;
+        if (shares > pendingShares) revert INVALID_AMOUNT();
+
+        // Lock the redemption price. Computed while the escrowed shares are still in totalSupply
+        assets = _convertToAssets(shares, Math.Rounding.Floor);
+
+        // Source the assets as idle, pulling from Aave if the idle buffer is short. This only moves value between Aave and idle, so totalAssets are unchanged.
+        _ensureIdleAssets(assets);
+
+        // Move the assets out of the active accounting into the claim accounting and burn the escrowed shares.
+        _accountedIdleAssets -= assets;
+        _reservedAssets += assets;
+        _burn(address(this), shares);
+
+        request.pendingShares = pendingShares - shares;
+        request.claimableShares += shares;
+        request.claimableAssets += assets;
+
+        // TODO: Emit event
+    }
+
+    function fulfillRedeemRequests(address[] calldata controllers, uint256[] calldata shares)
+        external
+        onlyRole(MANAGER_ROLE)
+    {
+        if (controllers.length != shares.length) revert INVALID_AMOUNT();
+
+        for (uint256 i = 0; i < controllers.length; i++) {
+            fulfillRedeem(controllers[i], shares[i]);
         }
     }
 
@@ -690,6 +730,31 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (withdrawn < shortfall) revert INSUFFICIENT_LIQUIDITY();
 
         _accountedIdleAssets += withdrawn;
+    }
+
+    function _fulfillRedeemRequest(address controller, uint256 shares) internal returns (uint256 assets) {
+        if (shares == 0) revert ZERO_SHARES();
+
+        RedeemRequestData storage request = _redeemRequests[controller];
+        uint256 pendingShares = request.pendingShares;
+        if (shares > pendingShares) revert INVALID_AMOUNT();
+
+        // Lock the redemption price. Computed while the escrowed shares are still in totalSupply
+        assets = _convertToAssets(shares, Math.Rounding.Floor);
+
+        // Source the assets as idle, pulling from Aave if the idle buffer is short. This only moves value between Aave and idle, so totalAssets are unchanged.
+        _ensureIdleAssets(assets);
+
+        // Move the assets out of the active accounting into the claim accounting and burn the escrowed shares.
+        _accountedIdleAssets -= assets;
+        _reservedAssets += assets;
+        _burn(address(this), shares);
+
+        request.pendingShares = pendingShares - shares;
+        request.claimableShares += shares;
+        request.claimableAssets += assets;
+
+        // TODO: Emit event
     }
 
     /*//////////////////////////////////////////////////////////////
