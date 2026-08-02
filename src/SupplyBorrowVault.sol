@@ -263,6 +263,25 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         emit StrategyExecuted(sharesAcquired, strategy.borrowAmount);
     }
 
+    /// @inheritdoc ISupplyBorrowVault
+    function deleverage(uint256 downstreamShares, uint256 repayAmount, uint256 collateralToWithdraw)
+        external
+        onlyRole(MANAGER_ROLE)
+        nonReentrant
+    {
+        // if (downstreamShares > 0) _withdrawFromDownstream(downstreamShares);
+        if (repayAmount > 0) _repayToAave(repayAmount);
+        if (collateralToWithdraw > 0) {
+            uint256 withdrawn = _withdrawFromAave(collateralToWithdraw);
+            _accountedIdleAssets += withdrawn;
+        }
+
+        // Never leave the remaining position below the HF floor
+        if (SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this)) != 0) {
+            if (_computeHealthFactor(0) < MIN_HEALTH_FACTOR) revert HF_TOO_LOW();
+        }
+    }
+
     /*//////////////////////////////////////////////////////////////
                           EXTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
