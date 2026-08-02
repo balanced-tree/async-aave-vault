@@ -267,7 +267,6 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     function deleverage(uint256 downstreamShares, uint256 repayAmount, uint256 collateralToWithdraw)
         external
         onlyRole(MANAGER_ROLE)
-        nonReentrant
     {
         if (downstreamShares > 0) _withdrawFromUnderlyingVault(downstreamShares);
         if (repayAmount > 0) _repayToAave(repayAmount);
