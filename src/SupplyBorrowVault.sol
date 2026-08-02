@@ -269,7 +269,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         onlyRole(MANAGER_ROLE)
         nonReentrant
     {
-        // if (downstreamShares > 0) _withdrawFromDownstream(downstreamShares);
+        if (downstreamShares > 0) _withdrawFromUnderlyingVault(downstreamShares);
         if (repayAmount > 0) _repayToAave(repayAmount);
         if (collateralToWithdraw > 0) {
             uint256 withdrawn = _withdrawFromAave(collateralToWithdraw);
