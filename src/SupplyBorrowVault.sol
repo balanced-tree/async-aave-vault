@@ -283,12 +283,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         }
     }
 
-    function fulfillRedeem(address controller, uint256 shares)
+    function fulfillRedeemRequest(address controller, uint256 shares)
         external
         onlyRole(MANAGER_ROLE)
         returns (uint256 assets)
     {
-        assets = _fulfillRedeemRequest(controller, shares);
+        assets = _fulfillRedeem(controller, shares);
     }
 
     function fulfillRedeemRequests(address[] calldata controllers, uint256[] calldata shares)
@@ -300,7 +300,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         assets = new uint256[](controllers.length);
 
         for (uint256 i = 0; i < controllers.length; i++) {
-            assets[i] = _fulfillRedeemRequest(controllers[i], shares[i]);
+            assets[i] = _fulfillRedeem(controllers[i], shares[i]);
         }
     }
 
@@ -713,7 +713,13 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         _accountedIdleAssets += withdrawn;
     }
 
-    function _fulfillRedeemRequest(address controller, uint256 shares) internal returns (uint256 assets) {
+    /**
+     * @notice Fulfill a single redeem request
+     * @param controller The address of the controller
+     * @param shares The number of shares to redeem
+     * @return assets The number of assets redeemed
+     */
+    function _fulfillRedeem(address controller, uint256 shares) internal returns (uint256 assets) {
         if (shares == 0) revert ZERO_SHARES();
 
         RedeemRequestData storage request = _redeemRequests[controller];
