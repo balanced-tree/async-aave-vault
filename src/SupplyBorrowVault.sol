@@ -283,6 +283,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         }
     }
 
+    /// @inheritdoc ISupplyBorrowVault
     function fulfillRedeemRequest(address controller, uint256 shares)
         external
         onlyRole(MANAGER_ROLE)
@@ -291,6 +292,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         assets = _fulfillRedeem(controller, shares);
     }
 
+    /// @inheritdoc ISupplyBorrowVault
     function fulfillRedeemRequests(address[] calldata controllers, uint256[] calldata shares)
         external
         onlyRole(MANAGER_ROLE)
