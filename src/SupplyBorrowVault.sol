@@ -60,7 +60,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     uint256 public targetIdleBps;
 
     /// @notice The minimum amount of idle assets to supply to Aave to avoid dust size supply() calls.
-    uint256 private _minSupplyAmount;
+    uint256 public minSupplyAmount;
 
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
@@ -232,7 +232,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     /// @dev The vault manager can set the minimum supply amount so that it can be updated dynamically.
     function setMinSupplyAmount(uint256 minSupplyAmount_) external onlyRole(MANAGER_ROLE) {
         if (minSupplyAmount_ == 0) revert ZERO_AMOUNT();
-        _minSupplyAmount = minSupplyAmount_;
+        minSupplyAmount = minSupplyAmount_;
 
         emit MinSupplyAmountSet(minSupplyAmount_);
     }
@@ -803,7 +803,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         uint256 excessIdle = idle - targetIdle;
 
-        if (excessIdle < _minSupplyAmount) {
+        if (excessIdle < minSupplyAmount) {
             return;
         }
 
