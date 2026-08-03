@@ -108,6 +108,18 @@ contract SupplyBorrowVaultTest is TestBase {
         assertEq(vault.performanceFee(), 4000);
     }
 
+    function test_SetMinSupplyAmount() public {
+        assertEq(vault.minSupplyAmount(), 0);
+
+        vm.expectRevert();
+        vault.setMinSupplyAmount(1000e6);
+
+        vm.startPrank(admin);
+        vault.setMinSupplyAmount(100e6);
+        vm.stopPrank();
+        assertEq(vault.minSupplyAmount(), 100e6);
+    }
+
     /*//////////////////////////////////////////////////////////////
                         COST BASIS TESTS
     //////////////////////////////////////////////////////////////*/
