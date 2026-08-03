@@ -36,7 +36,17 @@ contract SupplyBorrowVaultTest is TestBase {
         downstreamVault = IERC4626(ETH_MORPHO_VAULT);
 
         vault = new SupplyBorrowVault(
-            tokens[ETH][USDT_KEY], admin, treasury, spokeAddresses[ETH], ETH_MORPHO_VAULT, USDT_RESERVE_ID, USDC_RESERVE_ID, 3000, 3000, name, symbol
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            3000,
+            3000,
+            name,
+            symbol
         );
     }
 
@@ -109,7 +119,7 @@ contract SupplyBorrowVaultTest is TestBase {
     }
 
     function test_SetMinSupplyAmount() public {
-        assertEq(vault.minSupplyAmount(), 0);
+        assertEq(vault.minSupplyAmount(), 50000000);
 
         vm.expectRevert();
         vault.setMinSupplyAmount(1000e6);
@@ -118,6 +128,21 @@ contract SupplyBorrowVaultTest is TestBase {
         vault.setMinSupplyAmount(100e6);
         vm.stopPrank();
         assertEq(vault.minSupplyAmount(), 100e6);
+    }
+
+    function test_SetMinHealthFactor() public {
+        assertEq(vault.minHealthFactor(), 1.3e18);
+
+        vm.expectRevert();
+        vault.setMinHealthFactor(11000);
+
+        vm.startPrank(admin);
+        vm.expectRevert();
+        vault.setMinHealthFactor(1.2e18);
+
+        vault.setMinHealthFactor(1.7e18);
+        vm.stopPrank();
+        assertEq(vault.minHealthFactor(), 1.7e18);
     }
 
     /*//////////////////////////////////////////////////////////////
