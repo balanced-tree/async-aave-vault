@@ -43,7 +43,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     uint256 private constant BPS_PRECISION = 10_000;
     uint256 private constant MAX_TARGET_IDLE_BPS = 4000;
     uint256 private constant MAX_PERFORMANCE_FEE = 5000;
-    uint256 private constant MIN_HEALTH_FACTOR = 1.333e18;
+    uint256 private constant MIN_HEALTH_FACTOR = 1.3e18;
 
     bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
@@ -61,6 +61,9 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// @notice The minimum amount of idle assets to supply to Aave to avoid dust size supply() calls.
     uint256 public minSupplyAmount;
+
+    /// @notice The minimum health factor to avoid deleveraging.
+    uint256 public minHealthFactor;
 
     /// @notice The amount of internally accounted available assets.
     uint256 private _accountedIdleAssets;
@@ -190,6 +193,12 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (performanceFee_ > MAX_PERFORMANCE_FEE) revert INVALID_FEE_AMOUNT();
         performanceFee = performanceFee_;
 
+        // Set default minimum supply amount
+        minSupplyAmount = 50e6;
+
+        // Set default minimum health factor
+        minHealthFactor = MIN_HEALTH_FACTOR;
+
         // Set underlying vault
         if (downstreamVault_ == address(0)) revert ZERO_ADDRESS();
         if (IERC4626(downstreamVault_).asset() != borrowReserve.underlying) revert INVALID_ASSET();
@@ -238,11 +247,11 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /// @inheritdoc ISupplyBorrowVault
-    function setMinHealthFactor(uint256 minHealthFactor) external onlyRole(MANAGER_ROLE) {
+    function setMinHealthFactor(uint256 minHealthFactor_) external onlyRole(MANAGER_ROLE) {
         if (minHealthFactor < MIN_HEALTH_FACTOR) revert INVALID_AMOUNT();
-        minHealthFactor = minHealthFactor;
+        minHealthFactor = minHealthFactor_;
 
-        emit MinHealthFactorSet(minHealthFactor);
+        emit MinHealthFactorSet(minHealthFactor_);
     }
 
     /// @inheritdoc ISupplyBorrowVault
