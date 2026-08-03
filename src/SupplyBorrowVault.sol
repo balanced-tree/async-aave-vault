@@ -403,6 +403,20 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (msg.sender != controller && !isOperator(controller, msg.sender)) revert UNAUTHORIZED();
 
         RedeemRequestData storage redeemRequest = _redeemRequests[controller];
+
+        uint256 claimableShares = redeemRequest.claimableShares;
+        if (shares > claimableShares) revert INVALID_AMOUNT();
+
+        assets = Math.mulDiv(shares, redeemRequest.claimableAssets, redeemRequest.claimableShares, Math.Rounding.Floor);
+
+        redeemRequest.claimableShares = claimableShares - shares;
+        redeemRequest.claimableAssets -= assets;
+
+        _reservedAssets -= assets;
+
+        _transferOut(receiver, assets);
+
+        emit Withdraw(msg.sender, receiver, controller, assets, shares);
     }
 
     /// @inheritdoc IERC7540Operator
