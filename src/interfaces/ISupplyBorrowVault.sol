@@ -105,4 +105,22 @@ interface ISupplyBorrowVault is IERC4626, IERC7540Redeem {
      * @param collateralToWithdraw The amount of collateral to withdraw
      */
     function deleverage(uint256 downstreamShares, uint256 repayAmount, uint256 collateralToWithdraw) external;
+
+    /**
+     * @notice Fulfill a single redeem request
+     * @dev Only the vault manager can fulfill a redeem request
+     * @param controller The address of the controller
+     * @param shares The number of shares to redeem
+     * @return assets The number of assets redeemed
+     */
+    function fulfillRedeemRequest(address controller, uint256 shares) external returns (uint256 assets);
+
+    /**
+     * @notice Fulfill a batch of redeem requests
+     * @dev Only the vault manager can fulfill redeem requests
+     * @param controllers The addresses of the controllers
+     * @param shares The number of shares to redeem
+     * @return assets The number of assets redeemed
+     */
+    function fulfillRedeemRequests(address[] memory controllers, uint256[] memory shares) external returns (uint256[] memory assets);
 }
