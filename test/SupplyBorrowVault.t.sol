@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 // Internal
 import {TestBase} from "./TestBase.sol";
 import {SupplyBorrowVault} from "../src/SupplyBorrowVault.sol";
-// import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
+import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
 
 import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
 import {ISpoke} from "aave-v4/spoke/interfaces/ISpoke.sol";
@@ -180,5 +180,24 @@ contract SupplyBorrowVaultTest is TestBase {
         uint256 expected = (1e18 * sharesBefore + priceAfterYield * sharesAdded) / (sharesBefore + sharesAdded);
 
         assertEq(vault.costBasisPerShare(alice), expected, "weighted-average basis after yield");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            REDEEM TESTS
+    //////////////////////////////////////////////////////////////*/
+    function test_requestRedeem_auth() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        vm.prank(bob);
+        vm.expectRevert(ISupplyBorrowVault.UNAUTHORIZED.selector);
+        vault.requestRedeem(shares, alice, alice);
+
+        vm.prank(alice);
+        vault.setOperator(bob, true);
+
+        vm.prank(bob);
+        vault.requestRedeem(shares, alice, alice);
+
+        assertEq(vault.pendingRedeemRequest(0, alice), shares, "operator request recorded for owner");
     }
 }
