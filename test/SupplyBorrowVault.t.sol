@@ -212,7 +212,7 @@ contract SupplyBorrowVaultTest is TestBase {
         assertEq(vault.maxRedeem(alice), 0, "nothing claimable before fulfillment");
 
         vm.prank(admin);
-        uint256 fulfilledAssets = vault.fulfillRedeem(alice, shares);
+        uint256 fulfilledAssets = vault.fulfillRedeemRequest(alice, shares);
 
         assertEq(vault.pendingRedeemRequest(0, alice), 0, "pending cleared");
         assertEq(vault.maxRedeem(alice), shares, "claimable shares after fulfillment");
