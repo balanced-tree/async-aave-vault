@@ -185,7 +185,7 @@ contract SupplyBorrowVaultTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                             REDEEM TESTS
     //////////////////////////////////////////////////////////////*/
-    function test_requestRedeem_auth() public {
+    function test_RequestRedeem_auth() public {
         uint256 shares = _depositAs(alice, 1000e6);
 
         vm.prank(bob);
