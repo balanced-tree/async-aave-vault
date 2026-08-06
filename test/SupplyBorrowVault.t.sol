@@ -202,7 +202,7 @@ contract SupplyBorrowVaultTest is TestBase {
     }
 
     /// @dev E2E test of redeem flow without borrowing and underlying deposit
-    function test_redeem_E2E() public {
+    function test_Redeem_E2E() public {
         uint256 shares = _depositAs(alice, 1000e6);
         vm.prank(alice);
         vault.requestRedeem(shares, alice, alice);
