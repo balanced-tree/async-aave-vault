@@ -236,7 +236,7 @@ contract SupplyBorrowVaultTest is TestBase {
         vault.requestRedeem(shares, alice, alice);
 
         vm.prank(admin);
-        vault.fulfillRedeem(alice, shares);
+        vault.fulfillRedeemRequest(alice, shares);
 
         uint256 claimableAssets = vault.maxWithdraw(alice);
         assertGt(claimableAssets, 0, "has claimable assets");
