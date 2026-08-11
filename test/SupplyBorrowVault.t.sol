@@ -230,7 +230,7 @@ contract SupplyBorrowVaultTest is TestBase {
         assertApproxEqAbs(claimed, 1000e6, 10, "round-trip ~= deposit");
     }
 
-    function test_withdraw() public {
+    function test_Withdraw() public {
         uint256 shares = _depositAs(alice, 1000e6);
         vm.prank(alice);
         vault.requestRedeem(shares, alice, alice);
