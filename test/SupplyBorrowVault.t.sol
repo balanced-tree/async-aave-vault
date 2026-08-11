@@ -229,4 +229,25 @@ contract SupplyBorrowVaultTest is TestBase {
 
         assertApproxEqAbs(claimed, 1000e6, 10, "round-trip ~= deposit");
     }
+
+    function test_withdraw() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        vm.prank(admin);
+        vault.fulfillRedeem(alice, shares);
+
+        uint256 claimableAssets = vault.maxWithdraw(alice);
+        assertGt(claimableAssets, 0, "has claimable assets");
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(alice);
+        uint256 burnedShares = vault.withdraw(claimableAssets, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, claimableAssets, "assets paid out");
+        assertEq(burnedShares, shares, "withdrawing all assets consumes all claimable shares");
+        assertEq(vault.maxWithdraw(alice), 0, "no claimable assets left");
+        assertEq(vault.maxRedeem(alice), 0, "no claimable shares left");
+    }
 }
