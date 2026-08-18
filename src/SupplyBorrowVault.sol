@@ -84,7 +84,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     mapping(address controller => RedeemRequestData redeemRequest) private _redeemRequests;
 
     /// @notice Operators for each controller.
-    mapping(address controller => mapping(address operator => bool isOperator)) private _operators;
+    mapping(address controller => mapping(address operator => bool isOperator)) private operators;
 
     /*/////////////////// IMMUTABLE STATE ////////////////////////*/
     /// @notice Underlying asset.
@@ -360,7 +360,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (shares == 0) revert ZERO_SHARES();
         if (controller == address(0) || owner == address(0)) revert ZERO_ADDRESS();
 
-        if (msg.sender != owner && !_operators[owner][msg.sender]) revert UNAUTHORIZED();
+        if (msg.sender != owner && !operators[owner][msg.sender]) revert UNAUTHORIZED();
 
         // Escrow the shares into the vault. The shares stay in totalSupply while pending, so pps keeps floating until fulfillment locks it.
         _transfer(owner, address(this), shares);
@@ -382,7 +382,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (assets == 0) revert ZERO_AMOUNT();
         if (receiver == address(0)) revert ZERO_ADDRESS();
 
-        if (msg.sender != controller && !_operators[controller][msg.sender]) revert UNAUTHORIZED();
+        if (msg.sender != controller && !operators[controller][msg.sender]) revert UNAUTHORIZED();
 
         RedeemRequestData storage request = _redeemRequests[controller];
         uint256 claimableAssets = request.claimableAssets;
@@ -433,7 +433,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         if (operator == address(0)) revert ZERO_ADDRESS();
         if (msg.sender == operator) revert INVALID_OPERATOR();
 
-        _operators[msg.sender][operator] = approved;
+        operators[msg.sender][operator] = approved;
         emit OperatorSet(msg.sender, operator, approved);
         return true;
     }
@@ -537,7 +537,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
     /// @inheritdoc IERC7540Operator
     function isOperator(address controller, address operator) public view returns (bool status) {
-        return _operators[controller][operator];
+        return operators[controller][operator];
     }
 
     /// @inheritdoc IERC7540Redeem
