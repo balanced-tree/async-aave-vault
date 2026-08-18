@@ -250,4 +250,8 @@ contract SupplyBorrowVaultTest is TestBase {
         assertEq(vault.maxWithdraw(alice), 0, "no claimable assets left");
         assertEq(vault.maxRedeem(alice), 0, "no claimable shares left");
     }
+
+    /*//////////////////////////////////////////////////////////////
+                        OPERATOR TESTS
+    //////////////////////////////////////////////////////////////*/
 }
