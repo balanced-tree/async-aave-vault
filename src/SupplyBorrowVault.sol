@@ -84,7 +84,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     mapping(address controller => RedeemRequestData redeemRequest) private _redeemRequests;
 
     /// @notice Operators for each controller.
-    mapping(address controller => mapping(address operator => bool isOperator)) private operators;
+    mapping(address controller => mapping(address operator => bool isOperator)) public operators;
 
     /*/////////////////// IMMUTABLE STATE ////////////////////////*/
     /// @notice Underlying asset.
