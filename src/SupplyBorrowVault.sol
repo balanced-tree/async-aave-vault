@@ -438,6 +438,8 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
         return true;
     }
 
+    // TODO: Add authorizeOperator for IERC7741
+
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
