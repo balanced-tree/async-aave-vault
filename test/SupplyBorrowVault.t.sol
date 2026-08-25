@@ -155,6 +155,76 @@ contract SupplyBorrowVaultTest is TestBase {
         );
     }
 
+    function test_Constructor_revertsOnZeroDownstreamVault() public {
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            address(0),
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
+    function test_Constructor_revertsOnMatchingReserveIds() public {
+        vm.expectRevert(ISupplyBorrowVault.INVALID_ASSET.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDT_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
+    function test_Constructor_revertsOnReserveAssetMismatch() public {
+        // USDC reserve as the supply reserve, but asset is USDT — reserve.underlying (USDC) != asset (USDT)
+        vm.expectRevert(ISupplyBorrowVault.INVALID_ASSET.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDC_RESERVE_ID,
+            USDT_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
+    function test_Constructor_revertsOnDownstreamVaultAssetMismatch() public {
+        // Morpho vault asset is USDC; WETH borrow reserve underlying is WETH — mismatch
+        vm.expectRevert(ISupplyBorrowVault.INVALID_ASSET.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            WETH_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
