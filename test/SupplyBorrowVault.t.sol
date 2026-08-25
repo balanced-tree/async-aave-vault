@@ -225,6 +225,40 @@ contract SupplyBorrowVaultTest is TestBase {
         );
     }
 
+    function test_Constructor_revertsOnZeroTargetIdleBps() public {
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            0,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
+    function test_Constructor_revertsOnExcessiveTargetIdleBps() public {
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            4001,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
