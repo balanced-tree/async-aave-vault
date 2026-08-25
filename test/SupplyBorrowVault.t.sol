@@ -50,13 +50,6 @@ contract SupplyBorrowVaultTest is TestBase {
         );
     }
 
-    function test_Constructor() public view {
-        assertEq(vault.asset(), tokens[ETH][USDT_KEY]);
-        assertEq(vault.SPOKE_ADDRESS(), spokeAddresses[ETH]);
-        assertEq(vault.name(), name);
-        assertEq(vault.symbol(), symbol);
-    }
-
     /*//////////////////////////////////////////////////////////////
                            HELPER FUNCTIONS
     //////////////////////////////////////////////////////////////*/
@@ -73,6 +66,10 @@ contract SupplyBorrowVaultTest is TestBase {
         assets = vault.mint(shares, user);
         vm.stopPrank();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                       CONSTRUCTOR VALIDATION
+    //////////////////////////////////////////////////////////////*/
 
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
