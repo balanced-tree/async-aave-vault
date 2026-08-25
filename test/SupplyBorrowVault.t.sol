@@ -87,7 +87,22 @@ contract SupplyBorrowVaultTest is TestBase {
         );
     }
 
-    
+    function test_Constructor_revertsOnZeroTreasury() public {
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            admin,
+            address(0),
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
 
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
