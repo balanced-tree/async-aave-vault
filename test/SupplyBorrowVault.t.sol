@@ -70,6 +70,24 @@ contract SupplyBorrowVaultTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                        CONSTRUCTOR VALIDATION
     //////////////////////////////////////////////////////////////*/
+    function test_Constructor_revertsOnZeroAdmin() public {
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        new SupplyBorrowVault(
+            tokens[ETH][USDT_KEY],
+            address(0),
+            treasury,
+            spokeAddresses[ETH],
+            ETH_MORPHO_VAULT,
+            USDT_RESERVE_ID,
+            USDC_RESERVE_ID,
+            3000,
+            3000,
+            "Test",
+            "TST"
+        );
+    }
+
+    
 
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
