@@ -141,4 +141,17 @@ contract AdminFunctionsTest is TestBase {
         vm.stopPrank();
         assertEq(vault.minHealthFactor(), 1.7e18);
     }
+
+    function test_SetMinHealthFactor_revertsWhenBelowFloor() public {
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.setMinHealthFactor(1.29e18);
+    }
+
+    function test_SetMinHealthFactor_allowsFloor() public {
+        // Guard is `<`, so exactly MIN_HEALTH_FACTOR (1.3e18) must be accepted
+        vm.prank(admin);
+        vault.setMinHealthFactor(1.3e18);
+        assertEq(vault.minHealthFactor(), 1.3e18);
+    }
 }
