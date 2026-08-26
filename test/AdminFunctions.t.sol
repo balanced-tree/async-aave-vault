@@ -21,6 +21,9 @@ contract AdminFunctionsTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+
+    /// --- Set Manager --- ///
+
     function test_SetManager() public {
         assertEq(vault.manager(), admin);
 
@@ -55,6 +58,8 @@ contract AdminFunctionsTest is TestBase {
         vault.setMinSupplyAmount(100e6);
     }
 
+    /// --- Set Target Idle Bps --- ///
+
     function test_SetTargetIdleBps() public {
         assertEq(vault.targetIdleBps(), 3000);
 
@@ -70,6 +75,15 @@ contract AdminFunctionsTest is TestBase {
         vm.stopPrank();
         assertEq(vault.targetIdleBps(), 4000);
     }
+
+    function test_SetTargetIdleBps_allowsZero() public {
+        // setTargetIdleBps has no lower-bound guard (unlike constructor), so 0 is accepted
+        vm.prank(admin);
+        vault.setTargetIdleBps(0);
+        assertEq(vault.targetIdleBps(), 0);
+    }
+
+    /// --- Set Performance Fee --- ///
 
     function test_SetPerformanceFee() public {
         vm.expectRevert();
