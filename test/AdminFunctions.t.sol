@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity 0.8.30;
+
+// Internal
+import {TestBase} from "./utils/TestBase.sol";
+import {SupplyBorrowVault} from "../src/SupplyBorrowVault.sol";
+import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
+
+import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
+import {ISpoke} from "aave-v4/spoke/interfaces/ISpoke.sol";
+import {IERC4626} from "openzeppelin/interfaces/IERC4626.sol";
+import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
+
+contract AdminFunctionsTest is TestBase {
+    using SafeERC20 for IERC20;
+
+    function setUp() public override {
+        super.setUp();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            ADMIN FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
+    function test_SetManager() public {
+        assertEq(vault.manager(), admin);
+
+        vm.expectRevert();
+        vault.setManager(alice);
+
+        vm.prank(admin);
+        vault.setManager(alice);
+        assertEq(vault.manager(), alice);
+    }
+
+    function test_SetTargetIdleBps() public {
+        assertEq(vault.targetIdleBps(), 3000);
+
+        vm.expectRevert();
+        vault.setTargetIdleBps(4000);
+
+        vm.startPrank(admin);
+
+        vm.expectRevert();
+        vault.setTargetIdleBps(7000);
+
+        vault.setTargetIdleBps(4000);
+        vm.stopPrank();
+        assertEq(vault.targetIdleBps(), 4000);
+    }
+
+    function test_SetPerformanceFee() public {
+        vm.expectRevert();
+        vault.setPerformanceFee(4000);
+
+        vm.startPrank(admin);
+        vm.expectRevert();
+        vault.setPerformanceFee(7000);
+
+        vault.setPerformanceFee(4000);
+        vm.stopPrank();
+
+        assertEq(vault.performanceFee(), 4000);
+    }
+
+    function test_SetMinSupplyAmount() public {
+        assertEq(vault.minSupplyAmount(), 50000000);
+
+        vm.expectRevert();
+        vault.setMinSupplyAmount(1000e6);
+
+        vm.startPrank(admin);
+        vault.setMinSupplyAmount(100e6);
+        vm.stopPrank();
+        assertEq(vault.minSupplyAmount(), 100e6);
+    }
+
+    function test_SetMinHealthFactor() public {
+        assertEq(vault.minHealthFactor(), 1.3e18);
+
+        vm.expectRevert();
+        vault.setMinHealthFactor(11000);
+
+        vm.startPrank(admin);
+        vm.expectRevert();
+        vault.setMinHealthFactor(1.2e18);
+
+        vault.setMinHealthFactor(1.7e18);
+        vm.stopPrank();
+        assertEq(vault.minHealthFactor(), 1.7e18);
+    }
+}
