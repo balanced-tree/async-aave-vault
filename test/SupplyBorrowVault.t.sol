@@ -276,6 +276,15 @@ contract SupplyBorrowVaultTest is TestBase {
         );
     }
 
+    function test_Constructor_setsRolesCorrectly() public view {
+        bytes32 defaultAdminRole = bytes32(0);
+        bytes32 managerRole = keccak256("MANAGER_ROLE");
+
+        assertTrue(vault.hasRole(defaultAdminRole, admin));
+        assertTrue(vault.hasRole(managerRole, admin));
+        assertEq(vault.manager(), admin);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ADMIN FUNCTIONS
     //////////////////////////////////////////////////////////////*/
