@@ -99,6 +99,14 @@ contract AdminFunctionsTest is TestBase {
         assertEq(vault.performanceFee(), 4000);
     }
 
+    function test_SetPerformanceFee_allowsMaxFee() public {
+        vm.prank(admin);
+        vault.setPerformanceFee(5000);
+        assertEq(vault.performanceFee(), 5000);
+    }
+
+    /// --- Set Min Supply Amount --- ///
+
     function test_SetMinSupplyAmount() public {
         assertEq(vault.minSupplyAmount(), 50000000);
 
@@ -110,6 +118,14 @@ contract AdminFunctionsTest is TestBase {
         vm.stopPrank();
         assertEq(vault.minSupplyAmount(), 100e6);
     }
+
+    function test_SetMinSupplyAmount_revertsOnZero() public {
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_AMOUNT.selector);
+        vault.setMinSupplyAmount(0);
+    }
+
+    /// --- Set Min Health Factor --- ///
 
     function test_SetMinHealthFactor() public {
         assertEq(vault.minHealthFactor(), 1.3e18);
