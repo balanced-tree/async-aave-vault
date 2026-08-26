@@ -24,12 +24,35 @@ contract AdminFunctionsTest is TestBase {
     function test_SetManager() public {
         assertEq(vault.manager(), admin);
 
-        vm.expectRevert();
-        vault.setManager(alice);
-
         vm.prank(admin);
         vault.setManager(alice);
         assertEq(vault.manager(), alice);
+    }
+
+    function test_SetManager_revertsOnZeroAddress() public {
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.setManager(address(0));
+    }
+
+    function test_SetManager_revertsIfAlreadyManager() public {
+        // admin already holds MANAGER_ROLE from construction
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_MANAGER.selector);
+        vault.setManager(admin);
+    }
+
+    function test_SetManager_revokesOldManagerRole() public {
+        vm.prank(admin);
+        vault.setManager(alice);
+
+        assertEq(vault.manager(), alice);
+        assertFalse(vault.hasRole(keccak256("MANAGER_ROLE"), admin), "old manager should lose role");
+
+        // admin can no longer call manager-only functions
+        vm.prank(admin);
+        vm.expectRevert();
+        vault.setMinSupplyAmount(100e6);
     }
 
     function test_SetTargetIdleBps() public {
