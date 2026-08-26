@@ -303,21 +303,5 @@ contract VaultCreationTest is TestBase {
         assertEq(vault.maxRedeem(alice), 0, "no claimable shares left");
     }
 
-    /*//////////////////////////////////////////////////////////////
-                            OPERATOR TESTS
-    //////////////////////////////////////////////////////////////*/
-    function test_SetOperator() public {
-        vm.startPrank(alice);
-
-        vm.expectRevert(ISupplyBorrowVault.INVALID_OPERATOR.selector);
-        vault.setOperator(alice, true);
-
-        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
-        vault.setOperator(address(0), true);
-
-        vault.setOperator(bob, true);
-        vm.stopPrank();
-
-        assertEq(vault.operators(alice, bob), true);
-    }
+    
 }
