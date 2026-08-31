@@ -96,4 +96,30 @@ contract DepositTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                               MINT TESTS
     //////////////////////////////////////////////////////////////*/
+    function test_Mint_revertsOnZeroShares() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_AMOUNT.selector);
+        vault.mint(0, alice);
+    }
+
+    function test_Mint_revertsOnZeroReceiver() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.mint(1000e6, address(0));
+    }
+
+    function test_Mint_revertsWhenReservePaused() public {
+        ISpoke.Reserve memory reserve = spoke.getReserve(USDT_RESERVE_ID);
+        reserve.flags = ReserveFlags.wrap(ReserveFlags.unwrap(reserve.flags) | 0x01);
+
+        vm.mockCall(
+            address(spoke),
+            abi.encodeCall(ISpoke.getReserve, (USDT_RESERVE_ID)),
+            abi.encode(reserve)
+        );
+
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.MAX_MINT_EXCEEDED.selector);
+        vault.mint(1000e6, alice);
+    }
 }
