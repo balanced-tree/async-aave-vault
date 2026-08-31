@@ -86,4 +86,27 @@ contract ViewFunctionsTest is TestBase {
         assertEq(vault.maxWithdraw(alice), assets, "claimable assets after fulfillment");
         assertEq(vault.maxRedeem(alice), shares, "claimable shares after fulfillment");
     }
+
+    /*//////////////////////////////////////////////////////////////
+                          SUPPORTS INTERFACE
+    //////////////////////////////////////////////////////////////*/
+    function test_SupportsInterface_ERC4626() public view {
+        assertTrue(vault.supportsInterface(type(IERC4626).interfaceId));
+    }
+
+    function test_SupportsInterface_ERC165() public view {
+        assertTrue(vault.supportsInterface(type(IERC165).interfaceId));
+    }
+
+    function test_SupportsInterface_ERC7540Redeem() public view {
+        assertTrue(vault.supportsInterface(type(IERC7540Redeem).interfaceId));
+    }
+
+    function test_SupportsInterface_ERC7540Operator() public view {
+        assertTrue(vault.supportsInterface(type(IERC7540Operator).interfaceId));
+    }
+
+    function test_SupportsInterface_unknownReturnsFalse() public view {
+        assertFalse(vault.supportsInterface(0xdeadbeef));
+    }
 }
