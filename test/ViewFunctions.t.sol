@@ -21,4 +21,13 @@ contract ViewFunctionsTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                           ERC4626 VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
+    function test_PreviewWithdraw_reverts() public {
+        vm.expectRevert(ISupplyBorrowVault.NOT_IMPLEMENTED.selector);
+        vault.previewWithdraw(1000e6);
+    }
+
+    function test_PreviewRedeem_reverts() public {
+        vm.expectRevert(ISupplyBorrowVault.NOT_IMPLEMENTED.selector);
+        vault.previewRedeem(1000e6);
+    }
 }
