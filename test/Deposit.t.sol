@@ -122,4 +122,19 @@ contract DepositTest is TestBase {
         vm.expectRevert(ISupplyBorrowVault.MAX_MINT_EXCEEDED.selector);
         vault.mint(1000e6, alice);
     }
+
+    function test_Mint_correctAssetsCharged() public {
+        uint256 sharesToMint = 1000e6;
+        uint256 previewedAssets = vault.previewMint(sharesToMint);
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.startPrank(alice);
+        asset.forceApprove(address(vault), previewedAssets);
+        uint256 assetsCharged = vault.mint(sharesToMint, alice);
+        vm.stopPrank();
+
+        assertEq(assetsCharged, previewedAssets, "charged assets match previewMint");
+        assertEq(asset.balanceOf(alice), balBefore - assetsCharged, "correct assets deducted from alice");
+        assertEq(vault.balanceOf(alice), sharesToMint, "correct shares minted to alice");
+    }
 }
