@@ -67,4 +67,23 @@ contract ViewFunctionsTest is TestBase {
 
         assertEq(vault.maxMint(alice), 0);
     }
+
+    function test_MaxWithdraw_maxRedeem_beforeAndAfterFulfill() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        assertEq(vault.maxWithdraw(alice), 0, "nothing claimable before request");
+        assertEq(vault.maxRedeem(alice), 0, "nothing claimable before request");
+
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        assertEq(vault.maxWithdraw(alice), 0, "nothing claimable while pending");
+        assertEq(vault.maxRedeem(alice), 0, "nothing claimable while pending");
+
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        assertEq(vault.maxWithdraw(alice), assets, "claimable assets after fulfillment");
+        assertEq(vault.maxRedeem(alice), shares, "claimable shares after fulfillment");
+    }
 }
