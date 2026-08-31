@@ -41,4 +41,30 @@ contract ViewFunctionsTest is TestBase {
         // Double-floor rounding may lose at most 1 wei
         assertApproxEqAbs(back, x, 1, "round-trip within 1 wei");
     }
+
+    function test_MaxDeposit_zeroWhenPaused() public {
+        ISpoke.Reserve memory reserve = spoke.getReserve(USDT_RESERVE_ID);
+        reserve.flags = ReserveFlags.wrap(ReserveFlags.unwrap(reserve.flags) | 0x01);
+
+        vm.mockCall(
+            address(spoke),
+            abi.encodeCall(ISpoke.getReserve, (USDT_RESERVE_ID)),
+            abi.encode(reserve)
+        );
+
+        assertEq(vault.maxDeposit(alice), 0);
+    }
+
+    function test_MaxMint_zeroWhenPaused() public {
+        ISpoke.Reserve memory reserve = spoke.getReserve(USDT_RESERVE_ID);
+        reserve.flags = ReserveFlags.wrap(ReserveFlags.unwrap(reserve.flags) | 0x01);
+
+        vm.mockCall(
+            address(spoke),
+            abi.encodeCall(ISpoke.getReserve, (USDT_RESERVE_ID)),
+            abi.encode(reserve)
+        );
+
+        assertEq(vault.maxMint(alice), 0);
+    }
 }
