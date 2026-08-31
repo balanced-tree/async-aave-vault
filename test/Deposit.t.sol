@@ -60,4 +60,17 @@ contract DepositTest is TestBase {
         assertEq(vault.balanceOf(alice), shares);
         assertEq(vault.totalSupply(), shares);
     }
+
+    function test_Deposit_rebalancesIdleToAave() public {
+        // targetIdleBps = 3000 (30%), minSupplyAmount = 50e6
+        // deposit 1000e6: excessIdle = 700e6 > 50e6, so 700e6 is supplied to Aave
+        uint256 depositAmount = 1000e6;
+        _depositAs(alice, depositAmount);
+
+        uint256 targetIdle = depositAmount * 3000 / 10_000;
+        uint256 expectedSupplied = depositAmount - targetIdle;
+
+        uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        assertApproxEqAbs(aaveSupply, expectedSupplied, 1, "excess idle should be supplied to Aave");
+    }
 }
