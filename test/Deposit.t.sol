@@ -73,4 +73,13 @@ contract DepositTest is TestBase {
         uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
         assertApproxEqAbs(aaveSupply, expectedSupplied, 1, "excess idle should be supplied to Aave");
     }
+
+    function test_Deposit_doesNotRebalanceIfExcessBelowMinSupply() public {
+        // With minSupplyAmount = 50e6 and targetIdleBps = 3000,
+        // a 40e6 deposit has excessIdle = 28e6 < 50e6 — no supply to Aave
+        _depositAs(alice, 40e6);
+
+        uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        assertEq(aaveSupply, 0, "small deposit should stay idle");
+    }
 }
