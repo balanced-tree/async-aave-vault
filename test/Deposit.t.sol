@@ -82,4 +82,13 @@ contract DepositTest is TestBase {
         uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
         assertEq(aaveSupply, 0, "small deposit should stay idle");
     }
+
+    function test_Deposit_multipleUsersSharesProportional() public {
+        uint256 sharesAlice = _depositAs(alice, 1000e6);
+        uint256 sharesBob = _depositAs(bob, 500e6);
+
+        // No yield between deposits, so pps is unchanged — Bob gets exactly half Alice's shares
+        assertEq(sharesBob, sharesAlice / 2);
+        assertEq(vault.totalSupply(), sharesAlice + sharesBob);
+    }
 }
