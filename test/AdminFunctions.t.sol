@@ -3,7 +3,6 @@ pragma solidity 0.8.30;
 
 // Internal
 import {TestBase} from "./utils/TestBase.sol";
-import {SupplyBorrowVault} from "../src/SupplyBorrowVault.sol";
 import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
 
 import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
