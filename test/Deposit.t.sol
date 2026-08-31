@@ -50,4 +50,14 @@ contract DepositTest is TestBase {
         vault.deposit(1000e6, alice);
         vm.stopPrank();
     }
+
+    function test_Deposit_firstSharesAtParity() public {
+        uint256 depositAmount = 1000e6;
+        uint256 shares = _depositAs(alice, depositAmount);
+
+        // With virtual assets/shares of 1, first deposit is exactly 1:1
+        assertEq(shares, depositAmount);
+        assertEq(vault.balanceOf(alice), shares);
+        assertEq(vault.totalSupply(), shares);
+    }
 }
