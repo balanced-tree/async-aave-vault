@@ -16,4 +16,38 @@ contract DepositTest is TestBase {
     function setUp() public override {
         super.setUp();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                             DEPOSIT TESTS
+    //////////////////////////////////////////////////////////////*/
+    function test_Deposit_revertsOnZeroAmount() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_AMOUNT.selector);
+        vault.deposit(0, alice);
+    }
+
+    function test_Deposit_revertsOnZeroReceiver() public {
+        vm.startPrank(alice);
+        asset.forceApprove(address(vault), 1000e6);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.deposit(1000e6, address(0));
+        vm.stopPrank();
+    }
+
+    function test_Deposit_revertsWhenReservePaused() public {
+        ISpoke.Reserve memory reserve = spoke.getReserve(USDT_RESERVE_ID);
+        reserve.flags = ReserveFlags.wrap(ReserveFlags.unwrap(reserve.flags) | 0x01);
+
+        vm.mockCall(
+            address(spoke),
+            abi.encodeCall(ISpoke.getReserve, (USDT_RESERVE_ID)),
+            abi.encode(reserve)
+        );
+
+        vm.startPrank(alice);
+        asset.forceApprove(address(vault), 1000e6);
+        vm.expectRevert(ISupplyBorrowVault.MAX_DEPOSIT_EXCEEDED.selector);
+        vault.deposit(1000e6, alice);
+        vm.stopPrank();
+    }
 }
