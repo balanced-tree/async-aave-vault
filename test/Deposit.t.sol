@@ -10,6 +10,7 @@ import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
 import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {ISpoke, ReserveFlags} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
+// Deposit and mint tests
 contract DepositTest is TestBase {
     using SafeERC20 for IERC20;
 
@@ -91,4 +92,8 @@ contract DepositTest is TestBase {
         assertEq(sharesBob, sharesAlice / 2);
         assertEq(vault.totalSupply(), sharesAlice + sharesBob);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                              MINT TESTS
+    //////////////////////////////////////////////////////////////*/
 }
