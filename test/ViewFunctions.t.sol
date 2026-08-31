@@ -30,4 +30,15 @@ contract ViewFunctionsTest is TestBase {
         vm.expectRevert(ISupplyBorrowVault.NOT_IMPLEMENTED.selector);
         vault.previewRedeem(1000e6);
     }
+
+    function test_ConvertToShares_roundTrip() public {
+        _depositAs(alice, 1000e6);
+
+        uint256 x = 500e6;
+        uint256 shares = vault.convertToShares(x);
+        uint256 back = vault.convertToAssets(shares);
+
+        // Double-floor rounding may lose at most 1 wei
+        assertApproxEqAbs(back, x, 1, "round-trip within 1 wei");
+    }
 }
