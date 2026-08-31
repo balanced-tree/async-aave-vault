@@ -19,6 +19,6 @@ contract ViewFunctionsTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
-                             VIEW FUNCTION TESTS
+                          ERC4626 VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 }
