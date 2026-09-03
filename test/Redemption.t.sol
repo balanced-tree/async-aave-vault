@@ -52,6 +52,48 @@ contract RedemptionTest is TestBase {
         assertEq(vault.pendingRedeemRequest(0, alice), shares, "operator request recorded for owner");
     }
 
+    function test_RequestRedeem_revertsOnZeroShares() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_SHARES.selector);
+        vault.requestRedeem(0, alice, alice);
+    }
+
+    function test_RequestRedeem_revertsOnZeroController() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.requestRedeem(1000e6, address(0), alice);
+    }
+
+    function test_RequestRedeem_revertsOnZeroOwner() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.requestRedeem(1000e6, alice, address(0));
+    }
+
+    function test_RequestRedeem_escrowed() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        assertEq(vault.balanceOf(alice), 0, "alice shares transferred out");
+        assertEq(vault.balanceOf(address(vault)), shares, "vault holds escrowed shares");
+        assertEq(vault.totalSupply(), shares, "escrowed shares still in totalSupply");
+    }
+
+    function test_RequestRedeem_accumulatesMultipleRequests() public {
+        uint256 shares = _depositAs(alice, 2000e6);
+        uint256 half = shares / 2;
+
+        vm.prank(alice);
+        vault.requestRedeem(half, alice, alice);
+        assertEq(vault.pendingRedeemRequest(0, alice), half);
+
+        vm.prank(alice);
+        vault.requestRedeem(half, alice, alice);
+        assertEq(vault.pendingRedeemRequest(0, alice), shares, "pending accumulates");
+    }
+
     /// @dev E2E test of redeem flow without borrowing and underlying deposit
     function test_Redeem_E2E() public {
         uint256 shares = _depositAs(alice, 1000e6);
