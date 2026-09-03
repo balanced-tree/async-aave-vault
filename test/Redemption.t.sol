@@ -127,7 +127,41 @@ contract RedemptionTest is TestBase {
     /*//////////////////////////////////////////////////////////////
                         FULFILL REDEEM TESTS
     //////////////////////////////////////////////////////////////*/
-    
+    function test_FulfillRedeemRequest_revertsOnZeroShares() public {
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_SHARES.selector);
+        vault.fulfillRedeemRequest(alice, 0);
+    }
+
+    function test_FulfillRedeemRequest_revertsIfNotManager() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        vault.fulfillRedeemRequest(alice, 1000e6);
+    }
+
+    function test_FulfillRedeemRequest_revertsIfSharesExceedPending() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        vm.prank(alice);
+        vault.requestRedeem(shares / 2, alice, alice);
+
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.fulfillRedeemRequest(alice, shares); // more than the pending half
+    }
+
+    function test_FulfillRedeemRequests_revertsOnLengthMismatch() public {
+        address[] memory controllers = new address[](2);
+        controllers[0] = alice;
+        controllers[1] = bob;
+
+        uint256[] memory amounts = new uint256[](1);
+        amounts[0] = 1000e6;
+
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.fulfillRedeemRequests(controllers, amounts);
+    }
 
     /*//////////////////////////////////////////////////////////////
                             WITHDRAW TESTS
