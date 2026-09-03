@@ -163,6 +163,26 @@ contract RedemptionTest is TestBase {
         vault.fulfillRedeemRequests(controllers, amounts);
     }
 
+    function test_FulfillRedeemRequest_withDebtRevertsIfIdleInsufficient() public {
+        // Deposit 1000e6: 700e6 rebalances to Aave, leaving 300e6 idle
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        // Mock outstanding Aave debt so _ensureIdleAssets blocks collateral withdrawal
+        vm.mockCall(
+            address(spoke),
+            abi.encodeCall(ISpoke.getUserTotalDebt, (USDC_RESERVE_ID, address(vault))),
+            abi.encode(100e6)
+        );
+
+        // 300e6 idle < ~900e6 needed, and debt != 0 → INSUFFICIENT_LIQUIDITY
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.INSUFFICIENT_LIQUIDITY.selector);
+        vault.fulfillRedeemRequest(alice, shares);
+    }
+
     /*//////////////////////////////////////////////////////////////
                             WITHDRAW TESTS
     //////////////////////////////////////////////////////////////*/
