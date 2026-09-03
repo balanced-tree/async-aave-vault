@@ -81,6 +81,10 @@ contract RedemptionTest is TestBase {
         assertApproxEqAbs(claimed, 1000e6, 10, "round-trip ~= deposit");
     }
 
+    /*//////////////////////////////////////////////////////////////
+                            WITHDRAW TESTS
+    //////////////////////////////////////////////////////////////*/
+
     function test_Withdraw() public {
         uint256 shares = _depositAs(alice, 1000e6);
         vm.prank(alice);
