@@ -211,6 +211,28 @@ contract RedemptionTest is TestBase {
         assertEq(vault.pendingRedeemRequest(0, bob), 0, "bob pending cleared");
     }
 
+    function test_FulfillRedeemRequest_pullsFromAaveWhenNoDebt() public {
+        // Deposit 1000e6: 700e6 rebalances to Aave, 300e6 stays idle
+        uint256 shares = _depositAs(alice, 1000e6);
+
+        uint256 aaveSupplyBefore = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        assertGt(aaveSupplyBefore, 0, "some assets supplied to Aave after deposit");
+
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        // No debt: fulfill succeeds by pulling collateral from Aave to cover the idle shortfall
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        assertEq(vault.maxWithdraw(alice), assets, "claimable assets set");
+        assertEq(vault.maxRedeem(alice), shares, "claimable shares set");
+        assertEq(vault.pendingRedeemRequest(0, alice), 0, "pending cleared");
+
+        uint256 aaveSupplyAfter = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        assertLt(aaveSupplyAfter, aaveSupplyBefore, "Aave supply reduced to fund redemption");
+    }
+
     /*//////////////////////////////////////////////////////////////
                             WITHDRAW TESTS
     //////////////////////////////////////////////////////////////*/
