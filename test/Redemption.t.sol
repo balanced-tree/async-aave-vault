@@ -183,6 +183,34 @@ contract RedemptionTest is TestBase {
         vault.fulfillRedeemRequest(alice, shares);
     }
 
+    function test_FulfillRedeemRequests_batchFulfillsCorrectly() public {
+        uint256 aliceShares = _depositAs(alice, 1000e6);
+        uint256 bobShares = _depositAs(bob, 500e6);
+
+        vm.prank(alice);
+        vault.requestRedeem(aliceShares, alice, alice);
+        vm.prank(bob);
+        vault.requestRedeem(bobShares, bob, bob);
+
+        address[] memory controllers = new address[](2);
+        controllers[0] = alice;
+        controllers[1] = bob;
+
+        uint256[] memory shares = new uint256[](2);
+        shares[0] = aliceShares;
+        shares[1] = bobShares;
+
+        vm.prank(admin);
+        uint256[] memory assets = vault.fulfillRedeemRequests(controllers, shares);
+
+        assertEq(vault.maxRedeem(alice), aliceShares, "alice claimable shares");
+        assertEq(vault.maxRedeem(bob), bobShares, "bob claimable shares");
+        assertEq(vault.maxWithdraw(alice), assets[0], "alice claimable assets");
+        assertEq(vault.maxWithdraw(bob), assets[1], "bob claimable assets");
+        assertEq(vault.pendingRedeemRequest(0, alice), 0, "alice pending cleared");
+        assertEq(vault.pendingRedeemRequest(0, bob), 0, "bob pending cleared");
+    }
+
     /*//////////////////////////////////////////////////////////////
                             WITHDRAW TESTS
     //////////////////////////////////////////////////////////////*/
