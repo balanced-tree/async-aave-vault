@@ -53,6 +53,30 @@ contract RedemptionTest is TestBase {
         assertEq(vault.pendingRedeemRequest(0, alice), shares, "operator request recorded for owner");
     }
 
+    function test_Redeem_revertsOnZeroReceiver() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.redeem(1000e6, address(0), alice);
+    }
+
+    function test_Redeem_revertsIfUnauthorized() public {
+        vm.prank(bob);
+        vm.expectRevert(ISupplyBorrowVault.UNAUTHORIZED.selector);
+        vault.redeem(1000e6, alice, alice);
+    }
+
+    function test_Redeem_revertsIfExceedsClaimable() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.redeem(shares + 1, alice, alice);
+    }
+
     function test_RequestRedeem_revertsOnZeroShares() public {
         vm.prank(alice);
         vm.expectRevert(ISupplyBorrowVault.ZERO_SHARES.selector);
