@@ -258,4 +258,34 @@ contract RedemptionTest is TestBase {
         assertEq(vault.maxRedeem(alice), 0, "no claimable shares left");
     }
 
+    function test_Withdraw_revertsOnZeroAmount() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_AMOUNT.selector);
+        vault.withdraw(0, alice, alice);
+    }
+
+    function test_Withdraw_revertsOnZeroReceiver() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.withdraw(1000e6, address(0), alice);
+    }
+
+    function test_Withdraw_revertsIfUnauthorized() public {
+        vm.prank(bob);
+        vm.expectRevert(ISupplyBorrowVault.UNAUTHORIZED.selector);
+        vault.withdraw(1000e6, alice, alice);
+    }
+
+    function test_Withdraw_revertsIfExceedsClaimable() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.withdraw(vault.maxWithdraw(alice) + 1, alice, alice);
+    }
+
 }
