@@ -106,6 +106,24 @@ contract RedemptionTest is TestBase {
         assertEq(vault.totalSupply(), shares, "escrowed shares still in totalSupply");
     }
 
+    function test_Redeem_partial() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        uint256 halfShares = shares / 2;
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(alice);
+        uint256 assetsReceived = vault.redeem(halfShares, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, assetsReceived, "received correct assets");
+        assertApproxEqAbs(assetsReceived, assets / 2, 1, "roughly half the total assets");
+        assertEq(vault.maxRedeem(alice), shares - halfShares, "remaining claimable shares");
+        assertGt(vault.maxWithdraw(alice), 0, "remaining claimable assets");
+    }
+
     function test_RequestRedeem_accumulatesMultipleRequests() public {
         uint256 shares = _depositAs(alice, 2000e6);
         uint256 half = shares / 2;
