@@ -137,6 +137,24 @@ contract RedemptionTest is TestBase {
         assertEq(vault.pendingRedeemRequest(0, alice), shares, "pending accumulates");
     }
 
+    function test_Redeem_operatorCanRedeem() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vault.setOperator(bob, true);
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(bob);
+        vault.redeem(shares, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, assets, "alice received assets via operator");
+        assertEq(vault.maxRedeem(alice), 0, "nothing left claimable");
+    }
+
     /// @dev E2E test of redeem flow without borrowing and underlying deposit
     function test_Redeem_E2E() public {
         uint256 shares = _depositAs(alice, 1000e6);
