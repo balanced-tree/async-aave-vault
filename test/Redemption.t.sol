@@ -288,4 +288,21 @@ contract RedemptionTest is TestBase {
         vault.withdraw(vault.maxWithdraw(alice) + 1, alice, alice);
     }
 
+    function test_Withdraw_partial() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        uint256 half = assets / 2;
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(alice);
+        vault.withdraw(half, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, half, "received half the assets");
+        assertEq(vault.maxWithdraw(alice), assets - half, "remaining claimable assets");
+        assertGt(vault.maxRedeem(alice), 0, "remaining claimable shares");
+    }
+
 }
