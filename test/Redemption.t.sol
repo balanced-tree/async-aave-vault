@@ -343,9 +343,11 @@ contract RedemptionTest is TestBase {
         vm.prank(admin);
         vault.fulfillRedeemRequest(alice, shares);
 
+        uint256 claimableAssets = vault.maxWithdraw(alice);
+
         vm.prank(alice);
         vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
-        vault.withdraw(vault.maxWithdraw(alice) + 1, alice, alice);
+        vault.withdraw(claimableAssets + 1, alice, alice);
     }
 
     function test_Withdraw_partial() public {
