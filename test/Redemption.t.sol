@@ -305,4 +305,22 @@ contract RedemptionTest is TestBase {
         assertGt(vault.maxRedeem(alice), 0, "remaining claimable shares");
     }
 
+    function test_Withdraw_operatorCanWithdraw() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vault.setOperator(bob, true);
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(bob);
+        vault.withdraw(assets, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, assets, "alice received assets via operator");
+        assertEq(vault.maxWithdraw(alice), 0, "nothing left claimable");
+    }
+
 }
