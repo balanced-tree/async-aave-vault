@@ -88,4 +88,18 @@ contract DeleverageTest is TestBase {
             "vault USDT balance reflects freed collateral"
         );
     }
+
+    function test_Deleverage_revertsIfHfDropsBelowFloor() public {
+        // HF after setup is ~1.7-2.3 (300e6 USDC debt against 700e6 USDT)
+        // Setting minHealthFactor = 3.0e18 means any residual-debt deleverage fails the vault's floor.
+        // Withdrawing 50e6 USDT is within Aave's own health limits but below our custom floor.
+        _setupLeveragedPosition(1000e6, 300e6);
+
+        vm.prank(admin);
+        vault.setMinHealthFactor(3.0e18);
+
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.HF_TOO_LOW.selector);
+        vault.deleverage(0, 0, 50e6);
+    }
 }
