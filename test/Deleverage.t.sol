@@ -28,4 +28,13 @@ contract DeleverageTest is TestBase {
     function setUp() public override {
         super.setUp();
     }
+
+    /*//////////////////////////////////////////////////////////////
+                          DELEVERAGE TESTS
+    //////////////////////////////////////////////////////////////*/
+    function test_Deleverage_revertsIfNotManager() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        vault.deleverage(0, 0, 100e6);
+    }
 }
