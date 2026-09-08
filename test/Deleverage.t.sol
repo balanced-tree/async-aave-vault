@@ -24,4 +24,8 @@ contract DeleverageTest is TestBase {
             })
         );
     }
+
+    function setUp() public override {
+        super.setUp();
+    }
 }
