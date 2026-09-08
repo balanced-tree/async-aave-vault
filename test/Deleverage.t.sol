@@ -11,5 +11,19 @@ import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
 contract DeleverageTest is TestBase {
     using SafeERC20 for IERC20;
 
-  
+    // Deposit USDT, borrow USDC, deploy all USDC to Morpho. Returns downstream shares acquired.
+    function _setupLeveragedPosition(uint256 depositAmount, uint256 borrowAmount)
+        internal
+        returns (uint256 downstreamShares)
+    {
+        _depositAs(alice, depositAmount);
+        vm.prank(admin);
+        downstreamShares = vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: borrowAmount,
+                depositAmount: borrowAmount,
+                minSharesRequired: 1
+            })
+        );
+    }
 }
