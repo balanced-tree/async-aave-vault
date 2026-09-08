@@ -151,4 +151,40 @@ contract AdminFunctionsTest is TestBase {
         vault.setMinHealthFactor(1.3e18);
         assertEq(vault.minHealthFactor(), 1.3e18);
     }
+
+    /// --- Seter Event Emission Tests --- ///
+    function test_SetManager_emitsEvent() public {
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false, address(vault));
+        emit ISupplyBorrowVault.ManagerSet(alice);
+        vault.setManager(alice);
+    }
+
+    function test_SetPerformanceFee_emitsEvent() public {
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false, address(vault));
+        emit ISupplyBorrowVault.PerformanceFeeSet(4000);
+        vault.setPerformanceFee(4000);
+    }
+
+    function test_SetTargetIdleBps_emitsEvent() public {
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false, address(vault));
+        emit ISupplyBorrowVault.TargetIdleBpsSet(2000);
+        vault.setTargetIdleBps(2000);
+    }
+
+    function test_SetMinSupplyAmount_emitsEvent() public {
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false, address(vault));
+        emit ISupplyBorrowVault.MinSupplyAmountSet(100e6);
+        vault.setMinSupplyAmount(100e6);
+    }
+
+    function test_SetMinHealthFactor_emitsEvent() public {
+        vm.prank(admin);
+        vm.expectEmit(true, false, false, false, address(vault));
+        emit ISupplyBorrowVault.MinHealthFactorSet(1.7e18);
+        vault.setMinHealthFactor(1.7e18);
+    }
 }
