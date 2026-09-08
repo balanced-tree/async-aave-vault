@@ -68,4 +68,38 @@ contract StrategyExecutionTest is TestBase {
         vm.expectRevert(ISupplyBorrowVault.INSUFFICIENT_SHARES.selector);
         vault.executeStrategy(strategy);
     }
+
+    function test_ExecuteStrategy_withoutBorrow() public {
+        // Deposit collateral, borrow 300 USDC but only deploy half — leaves 150 in accountedBorrowAssets
+        _depositAs(alice, 1000e6);
+
+        uint256 borrowAmount = 300e6;
+        vm.prank(admin);
+        vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: borrowAmount,
+                depositAmount: borrowAmount / 2,
+                minSharesRequired: 1
+            })
+        );
+
+        uint256 sharesBefore = vault.UNDERLYING_VAULT().balanceOf(address(vault));
+        uint256 debtBefore = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+
+        // Deploy the remaining 150 USDC without borrowing more
+        vm.prank(admin);
+        uint256 sharesAcquired = vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: 0,
+                depositAmount: borrowAmount / 2,
+                minSharesRequired: 1
+            })
+        );
+
+        assertGt(sharesAcquired, 0, "acquired additional downstream shares");
+        assertGt(vault.UNDERLYING_VAULT().balanceOf(address(vault)), sharesBefore, "downstream shares increased");
+
+        uint256 debtAfter = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+        assertApproxEqAbs(debtAfter, debtBefore, 1, "Aave debt unchanged - no new borrow");
+    }
 }
