@@ -61,4 +61,31 @@ contract DeleverageTest is TestBase {
             "debt reduced by repay amount"
         );
     }
+
+    function test_Deleverage_fullUnwind() public {
+        uint256 allShares = _setupLeveragedPosition(1000e6, 300e6);
+
+        // Step 1: pull all USDC back from Morpho into _accountedBorrowAssets
+        vm.prank(admin);
+        vault.deleverage(allShares, 0, 0);
+
+        assertEq(vault.UNDERLYING_VAULT().balanceOf(address(vault)), 0, "no downstream shares remain");
+
+        // Step 2: repay all Aave debt then free all collateral
+        uint256 debt = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+        uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        uint256 vaultUsdtBefore = asset.balanceOf(address(vault));
+
+        vm.prank(admin);
+        vault.deleverage(0, debt, aaveSupply);
+
+        assertApproxEqAbs(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), 0, 1, "Aave debt cleared");
+        assertApproxEqAbs(spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault)), 0, 1e6, "Aave supply cleared");
+        assertApproxEqAbs(
+            asset.balanceOf(address(vault)),
+            vaultUsdtBefore + aaveSupply,
+            1e6,
+            "vault USDT balance reflects freed collateral"
+        );
+    }
 }
