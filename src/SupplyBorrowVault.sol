@@ -288,7 +288,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         // Never leave the remaining position below the HF floor
         if (SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this)) != 0) {
-            if (_computeHealthFactor(0) < MIN_HEALTH_FACTOR) revert HF_TOO_LOW();
+            if (_computeHealthFactor(0) < minHealthFactor) revert HF_TOO_LOW();
         }
     }
 
@@ -866,7 +866,7 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
 
         uint256 hf = _computeHealthFactor(amountToBorrow);
 
-        if (hf < MIN_HEALTH_FACTOR) revert HF_TOO_LOW();
+        if (hf < minHealthFactor) revert HF_TOO_LOW();
 
         (, borrowedAssets) = SPOKE.borrow(BORROW_RESERVE_ID, amountToBorrow, address(this));
 
