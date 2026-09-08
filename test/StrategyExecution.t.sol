@@ -138,4 +138,49 @@ contract StrategyExecutionTest is TestBase {
         vm.expectRevert(ISupplyBorrowVault.HF_TOO_LOW.selector);
         vault.executeStrategy(strategy);
     }
+
+    function test_ExecuteStrategy_emitsEventOnBorrow() public {
+        _depositAs(alice, 1000e6);
+
+        uint256 borrowAmount = 300e6;
+        uint256 expectedShares = vault.UNDERLYING_VAULT().previewDeposit(borrowAmount);
+
+        vm.prank(admin);
+        vm.expectEmit(true, true, false, false, address(vault));
+        emit ISupplyBorrowVault.StrategyExecuted(expectedShares, borrowAmount);
+        vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: borrowAmount,
+                depositAmount: borrowAmount,
+                minSharesRequired: 1
+            })
+        );
+    }
+
+    function test_ExecuteStrategy_emitsEventWithoutBorrow() public {
+        _depositAs(alice, 1000e6);
+
+        uint256 borrowAmount = 300e6;
+        vm.prank(admin);
+        vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: borrowAmount,
+                depositAmount: borrowAmount / 2,
+                minSharesRequired: 1
+            })
+        );
+
+        uint256 expectedShares = vault.UNDERLYING_VAULT().previewDeposit(borrowAmount / 2);
+
+        vm.prank(admin);
+        vm.expectEmit(true, true, false, false, address(vault));
+        emit ISupplyBorrowVault.StrategyExecuted(expectedShares, 0);
+        vault.executeStrategy(
+            ISupplyBorrowVault.StrategyExecutionData({
+                borrowAmount: 0,
+                depositAmount: borrowAmount / 2,
+                minSharesRequired: 1
+            })
+        );
+    }
 }
