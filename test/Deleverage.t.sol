@@ -102,4 +102,29 @@ contract DeleverageTest is TestBase {
         vm.expectRevert(ISupplyBorrowVault.HF_TOO_LOW.selector);
         vault.deleverage(0, 0, 50e6);
     }
+
+    function test_Deleverage_withZeroDebtFreesCollateralDirectly() public {
+        // Deposit without borrowing — 700e6 USDT flows to Aave, debt stays zero
+        _depositAs(alice, 1000e6);
+
+        uint256 aaveSupplyBefore = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
+        uint256 vaultUsdtBefore = asset.balanceOf(address(vault));
+
+        // HF check is skipped when debt == 0 — collateral withdrawal goes through freely
+        vm.prank(admin);
+        vault.deleverage(0, 0, 100e6);
+
+        assertApproxEqAbs(
+            spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault)),
+            aaveSupplyBefore - 100e6,
+            1e6,
+            "Aave supply reduced"
+        );
+        assertApproxEqAbs(
+            asset.balanceOf(address(vault)),
+            vaultUsdtBefore + 100e6,
+            1e6,
+            "vault USDT balance increased"
+        );
+    }
 }
