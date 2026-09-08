@@ -37,4 +37,28 @@ contract DeleverageTest is TestBase {
         vm.expectRevert();
         vault.deleverage(0, 0, 100e6);
     }
+
+    function test_Deleverage_partialUnwind() public {
+        uint256 allShares = _setupLeveragedPosition(1000e6, 300e6);
+        uint256 halfShares = allShares / 2;
+
+        uint256 debtBefore = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+
+        vm.prank(admin);
+        vault.deleverage(halfShares, 150e6, 0);
+
+        assertApproxEqAbs(
+            vault.UNDERLYING_VAULT().balanceOf(address(vault)),
+            allShares - halfShares,
+            1,
+            "half downstream shares redeemed"
+        );
+        assertLt(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), debtBefore, "Aave debt reduced");
+        assertApproxEqAbs(
+            spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)),
+            debtBefore - 150e6,
+            1e6,
+            "debt reduced by repay amount"
+        );
+    }
 }
