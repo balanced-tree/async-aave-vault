@@ -102,4 +102,25 @@ contract StrategyExecutionTest is TestBase {
         uint256 debtAfter = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
         assertApproxEqAbs(debtAfter, debtBefore, 1, "Aave debt unchanged - no new borrow");
     }
+
+    function test_ExecuteStrategy_withBorrow() public {
+        // Deposit 1000e6 USDT → 700e6 rebalances to Aave as collateral
+        _depositAs(alice, 1000e6);
+
+        uint256 borrowAmount = 300e6;
+        ISupplyBorrowVault.StrategyExecutionData memory strategy = ISupplyBorrowVault.StrategyExecutionData({
+            borrowAmount: borrowAmount,
+            depositAmount: borrowAmount,
+            minSharesRequired: 1
+        });
+
+        vm.prank(admin);
+        uint256 sharesAcquired = vault.executeStrategy(strategy);
+
+        assertGt(sharesAcquired, 0, "acquired downstream shares");
+        assertEq(vault.UNDERLYING_VAULT().balanceOf(address(vault)), sharesAcquired, "vault holds downstream shares");
+
+        uint256 debt = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+        assertApproxEqAbs(debt, borrowAmount, 1, "Aave debt matches borrowed amount");
+    }
 }
