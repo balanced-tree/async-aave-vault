@@ -123,4 +123,19 @@ contract StrategyExecutionTest is TestBase {
         uint256 debt = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
         assertApproxEqAbs(debt, borrowAmount, 1, "Aave debt matches borrowed amount");
     }
+
+    function test_ExecuteStrategy_revertsIfHfTooLow() public {
+        // 700e6 USDT as collateral; borrowing 1000e6 USDC gives HF ≈ 0.68 — below the 1.3 floor
+        _depositAs(alice, 1000e6);
+
+        ISupplyBorrowVault.StrategyExecutionData memory strategy = ISupplyBorrowVault.StrategyExecutionData({
+            borrowAmount: 1000e6,
+            depositAmount: 1000e6,
+            minSharesRequired: 1
+        });
+
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.HF_TOO_LOW.selector);
+        vault.executeStrategy(strategy);
+    }
 }
