@@ -138,6 +138,25 @@ contract StrategyExecutionTest is TestBase {
         vault.executeStrategy(strategy);
     }
 
+    function test_ExecuteStrategy_revertsWhenHfBelowConfiguredFloor() public {
+        // 700e6 USDT in Aave → effective collateral ≈ 679 USDC (97% CF)
+        // Borrowing 450e6 USDC → HF ≈ 1.51; passes the 1.3 constant floor but fails a 1.8 configured floor
+        _depositAs(alice, 1000e6);
+
+        vm.prank(admin);
+        vault.setMinHealthFactor(1.8e18);
+
+        ISupplyBorrowVault.StrategyExecutionData memory strategy = ISupplyBorrowVault.StrategyExecutionData({
+            borrowAmount: 450e6,
+            depositAmount: 450e6,
+            minSharesRequired: 1
+        });
+
+        vm.prank(admin);
+        vm.expectRevert(ISupplyBorrowVault.HF_TOO_LOW.selector);
+        vault.executeStrategy(strategy);
+    }
+
     function test_ExecuteStrategy_emitsEventOnBorrow() public {
         _depositAs(alice, 1000e6);
 
