@@ -20,9 +20,7 @@ contract DeleverageTest is TestBase {
         vm.prank(admin);
         downstreamShares = vault.executeStrategy(
             ISupplyBorrowVault.StrategyExecutionData({
-                borrowAmount: borrowAmount,
-                depositAmount: borrowAmount,
-                minSharesRequired: 1
+                borrowAmount: borrowAmount, depositAmount: borrowAmount, minSharesRequired: 1
             })
         );
     }
