@@ -77,14 +77,19 @@ contract DeleverageTest is TestBase {
 
         assertEq(vault.UNDERLYING_VAULT().balanceOf(address(vault)), 0, "no downstream shares remain");
 
-        // Use actual vault USDC balance as repayAmount — Morpho floor-rounding means it may be
-        // slightly less than the outstanding debt, which is fine for a near-full repayment.
-        uint256 repayAmount = borrowAsset.balanceOf(address(vault));
+        // Morpho floor-rounding may return a few units less USDC than the outstanding debt.
+        // Top up the vault so the full debt can be repaid and all collateral freed.
+        uint256 debt = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
+        uint256 vaultUsdc = borrowAsset.balanceOf(address(vault));
+        if (vaultUsdc < debt) {
+            deal(address(borrowAsset), address(vault), debt);
+        }
+
         uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
         uint256 vaultUsdtBefore = asset.balanceOf(address(vault));
 
         vm.prank(admin);
-        vault.deleverage(0, repayAmount, aaveSupply);
+        vault.deleverage(0, debt, aaveSupply);
 
         assertApproxEqAbs(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), 0, 10, "Aave debt nearly cleared");
         assertApproxEqAbs(spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault)), 0, 1e6, "Aave supply cleared");
