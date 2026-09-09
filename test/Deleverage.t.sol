@@ -69,29 +69,27 @@ contract DeleverageTest is TestBase {
 
     function test_Deleverage_fullUnwind() public {
         uint256 allShares = _setupLeveragedPosition(1000e6, 300e6);
-        IERC20 borrowAsset = IERC20(vault.UNDERLYING_VAULT().asset());
 
-        // Step 1: pull all USDC back from Morpho into _accountedBorrowAssets
-        vm.prank(admin);
-        vault.deleverage(allShares, 0, 0);
+        // Warp 30 days so Morpho yield outpaces the Aave interest owed. This guarantees
+        // previewRedeem(allShares) >= actual outstanding Aave debt at repay time, so
+        // _accountedBorrowAssets never underflows and the full debt can be cleared.
+        vm.warp(block.timestamp + 30 days);
 
-        assertEq(vault.UNDERLYING_VAULT().balanceOf(address(vault)), 0, "no downstream shares remain");
-
-        // Morpho floor-rounding may return a few units less USDC than the outstanding debt.
-        // Top up the vault so the full debt can be repaid and all collateral freed.
-        uint256 debt = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
-        uint256 vaultUsdc = borrowAsset.balanceOf(address(vault));
-        if (vaultUsdc < debt) {
-            deal(address(borrowAsset), address(vault), debt);
-        }
-
+        uint256 repayAmount = vault.UNDERLYING_VAULT().previewRedeem(allShares);
         uint256 aaveSupply = spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault));
         uint256 vaultUsdtBefore = asset.balanceOf(address(vault));
 
+        // Combine redeem + repay in one call; Aave caps repaid at the actual outstanding debt
         vm.prank(admin);
-        vault.deleverage(0, debt, aaveSupply);
+        vault.deleverage(allShares, repayAmount, 0);
 
-        assertApproxEqAbs(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), 0, 10, "Aave debt nearly cleared");
+        assertEq(vault.UNDERLYING_VAULT().balanceOf(address(vault)), 0, "no downstream shares remain");
+        assertApproxEqAbs(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), 0, 10, "Aave debt cleared");
+
+        // Debt is now 0 - safely withdraw all collateral
+        vm.prank(admin);
+        vault.deleverage(0, 0, aaveSupply);
+
         assertApproxEqAbs(spoke.getUserSuppliedAssets(USDT_RESERVE_ID, address(vault)), 0, 1e6, "Aave supply cleared");
         assertApproxEqAbs(
             asset.balanceOf(address(vault)),
