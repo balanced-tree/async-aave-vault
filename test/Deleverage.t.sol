@@ -44,6 +44,11 @@ contract DeleverageTest is TestBase {
 
         uint256 debtBefore = spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault));
 
+        // ERC4626 floor-rounding means redeeming half the shares gives slightly less than half
+        // the deposited USDC. Use previewRedeem to get the exact amount so the repay transfer
+        // doesn't exceed the vault's balance.
+        uint256 repayAmount = vault.UNDERLYING_VAULT().previewRedeem(halfShares);
+
         vm.prank(admin);
         vault.deleverage(halfShares, 150e6, 0);
 
@@ -56,8 +61,8 @@ contract DeleverageTest is TestBase {
         assertLt(spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)), debtBefore, "Aave debt reduced");
         assertApproxEqAbs(
             spoke.getUserTotalDebt(USDC_RESERVE_ID, address(vault)),
-            debtBefore - 150e6,
-            1e6,
+            debtBefore - repayAmount,
+            2,
             "debt reduced by repay amount"
         );
     }
