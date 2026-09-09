@@ -50,7 +50,7 @@ contract DeleverageTest is TestBase {
         uint256 repayAmount = vault.UNDERLYING_VAULT().previewRedeem(halfShares);
 
         vm.prank(admin);
-        vault.deleverage(halfShares, 150e6, 0);
+        vault.deleverage(halfShares, repayAmount, 0);
 
         assertApproxEqAbs(
             vault.UNDERLYING_VAULT().balanceOf(address(vault)),
