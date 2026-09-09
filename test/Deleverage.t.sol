@@ -127,11 +127,6 @@ contract DeleverageTest is TestBase {
             1e6,
             "Aave supply reduced"
         );
-        assertApproxEqAbs(
-            asset.balanceOf(address(vault)),
-            vaultUsdtBefore + 100e6,
-            1e6,
-            "vault USDT balance increased"
-        );
+        assertApproxEqAbs(asset.balanceOf(address(vault)), vaultUsdtBefore + 100e6, 1e6, "vault USDT balance increased");
     }
 }
