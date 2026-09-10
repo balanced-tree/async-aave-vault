@@ -454,20 +454,23 @@ contract SupplyBorrowVault is AccessControl, ReentrancyGuard, ERC20, ISupplyBorr
     }
 
     /// @inheritdoc IERC4626
-    /// @dev totalAssets = idleAsets + assets supplied to Aave + valueOfBorrowedFundsHeld (in asset units) - debtVault (in asset units)
+    /// @dev totalAssets = idleAssets + assets supplied to Aave
+    ///                  + (borrowAssets held in vault + underlying vault position) converted to asset
+    ///                  - debt converted to asset
     function totalAssets() public view override returns (uint256 assets) {
         assets = _accountedIdleAssets + SPOKE.getUserSuppliedAssets(RESERVE_ID, address(this));
 
         uint256 borrowAssets = _accountedBorrowAssets;
-
+        uint256 underlyingShares = _underlyingVaultShares;
         uint256 debt = SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, address(this));
 
-        // If there's no borrow, we don't need to read the oracle for the borrow asset value conversion.
-        if (borrowAssets != 0 || debt != 0) {
+        // Oracle conversion is only needed when there is a borrow-asset exposure.
+        if (borrowAssets != 0 || underlyingShares != 0 || debt != 0) {
             uint256 borrowPrice = IPriceOracle(SPOKE_ORACLE_ADDRESS).getReservePrice(BORROW_RESERVE_ID);
             uint256 assetPrice = IPriceOracle(SPOKE_ORACLE_ADDRESS).getReservePrice(RESERVE_ID);
 
-            assets += _borrowToAsset(borrowAssets, borrowPrice, assetPrice, Math.Rounding.Floor);
+            uint256 underlyingVaultValue = UNDERLYING_VAULT.previewRedeem(underlyingShares);
+            assets += _borrowToAsset(borrowAssets + underlyingVaultValue, borrowPrice, assetPrice, Math.Rounding.Floor);
             uint256 debtValue = _borrowToAsset(debt, borrowPrice, assetPrice, Math.Rounding.Ceil);
 
             assets = assets > debtValue ? assets - debtValue : 0;
