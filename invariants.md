@@ -17,3 +17,21 @@ Incremented by `_borrowFromAave` and `_withdrawFromUnderlyingVault`; decremented
 Backed 1:1 by actual USDT sitting in the contract wallet (follows from A1 and the fact that `_transferOut` moves real tokens).
 
 ---
+
+## Net Asset Value
+
+**N1.** `totalAssets() ≥ 0`
+Clamped at zero when oracle-converted debt exceeds the borrow-asset position (line 476).
+
+**N2.** The formula is exact:
+```
+totalAssets = _accountedIdleAssets
+            + SPOKE.getUserSuppliedAssets(RESERVE_ID, this)
+            + borrowToAsset(_accountedBorrowAssets + UNDERLYING_VAULT.previewRedeem(_underlyingVaultShares))
+            - borrowToAsset(SPOKE.getUserTotalDebt(BORROW_RESERVE_ID, this))
+```
+Debt is oracle-converted with ceiling rounding; borrow-asset holdings with floor rounding.
+
+**N3.** `totalAssets()` slightly overstates NAV when Aave interest has accrued but the debt view is stale. At actual repayment the debt is settled at the accrued amount, so any surplus USDC from Morpho outperforming covers it. This overshoot is non-exploitable but visible in view calls.
+
+---
