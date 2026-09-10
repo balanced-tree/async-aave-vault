@@ -85,4 +85,28 @@ contract CostBasisTest is TestBase {
         assertEq(vault.costBasisPerShare(alice), aliceBasis, "partial escrow leaves remaining basis unchanged");
         assertEq(vault.balanceOf(alice), aliceShares / 2, "alice retains half her shares");
     }
+
+    // Fuzz over deposit amount and transfer size to cover the full/partial threshold.
+    // Full transfer (amount == all shares): sender basis resets to 0.
+    // Partial transfer (amount < all shares): sender basis is unchanged.
+    // In both cases bob starts at zero, so the weighted average collapses to alice's basis.
+    function testFuzz_Transfer(uint256 depositAmount, uint256 transferAmount) public {
+        depositAmount = bound(depositAmount, 1e6, 1e12);
+        uint256 aliceShares = _depositAs(alice, depositAmount);
+        uint256 aliceBasis = vault.costBasisPerShare(alice);
+
+        transferAmount = bound(transferAmount, 1, aliceShares);
+
+        vm.prank(alice);
+        vault.transfer(bob, transferAmount);
+
+        if (transferAmount == aliceShares) {
+            assertEq(vault.costBasisPerShare(alice), 0, "full transfer resets sender basis");
+        } else {
+            assertEq(vault.costBasisPerShare(alice), aliceBasis, "partial transfer leaves sender basis unchanged");
+        }
+
+        // Bob had zero shares before, so weighted average = aliceBasis exactly
+        assertEq(vault.costBasisPerShare(bob), aliceBasis, "receiver inherits sender's basis");
+    }
 }
