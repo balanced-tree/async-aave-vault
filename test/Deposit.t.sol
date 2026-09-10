@@ -92,6 +92,21 @@ contract DepositTest is TestBase {
         assertEq(vault.totalSupply(), sharesAlice + sharesBob);
     }
 
+    // amount ∈ [1, 1e12] raw USDT units (up to 1 million USDT).
+    // Invariants: shares minted > 0, alice holds exactly those shares, and
+    // convertToAssets round-trips back within 1 wei (ERC4626 floor rounding).
+    function testFuzz_Deposit(uint256 amount) public {
+        amount = bound(amount, 1, 1e12);
+
+        uint256 shares = _depositAs(alice, amount);
+
+        assertGt(shares, 0, "deposit must mint shares");
+        assertEq(vault.balanceOf(alice), shares, "alice holds all minted shares");
+        assertEq(vault.totalSupply(), shares, "total supply equals alice's shares");
+        assertApproxEqAbs(vault.totalAssets(), amount, 1, "totalAssets matches deposit");
+        assertApproxEqAbs(vault.convertToAssets(shares), amount, 1, "convertToAssets round-trips within 1 wei");
+    }
+
     /*//////////////////////////////////////////////////////////////
                               MINT TESTS
     //////////////////////////////////////////////////////////////*/
