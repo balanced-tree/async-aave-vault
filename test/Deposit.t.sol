@@ -151,4 +151,22 @@ contract DepositTest is TestBase {
         assertEq(asset.balanceOf(alice), balBefore - assetsCharged, "correct assets deducted from alice");
         assertEq(vault.balanceOf(alice), sharesToMint, "correct shares minted to alice");
     }
+
+    // shares ∈ [1, 1e12]. Assets charged must match previewMint and alice must hold
+    // exactly the requested shares regardless of the input size.
+    function testFuzz_Mint(uint256 shares) public {
+        shares = bound(shares, 1, 1e12);
+
+        uint256 expectedAssets = vault.previewMint(shares);
+
+        vm.startPrank(alice);
+        asset.forceApprove(address(vault), expectedAssets);
+        uint256 assetsCharged = vault.mint(shares, alice);
+        vm.stopPrank();
+
+        assertGt(assetsCharged, 0, "mint must consume assets");
+        assertEq(assetsCharged, expectedAssets, "assets charged match previewMint");
+        assertEq(vault.balanceOf(alice), shares, "alice holds exactly minted shares");
+        assertEq(vault.totalSupply(), shares, "total supply equals minted shares");
+    }
 }
