@@ -3,11 +3,12 @@ pragma solidity 0.8.30;
 
 // Internal
 import {TestBase} from "./utils/TestBase.sol";
+import {SupplyBorrowVault} from "../src/SupplyBorrowVault.sol";
 import {ISupplyBorrowVault} from "../src/interfaces/ISupplyBorrowVault.sol";
 
 import {IERC20} from "openzeppelin/interfaces/IERC20.sol";
-import {ISpoke} from "aave-v4/spoke/interfaces/ISpoke.sol";
 import {SafeERC20} from "openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {ISpoke} from "aave-v4/spoke/interfaces/ISpoke.sol";
 
 contract RedemptionTest is TestBase {
     using SafeERC20 for IERC20;
@@ -35,7 +36,7 @@ contract RedemptionTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            REDEEM TESTS
+                          REQUEST REDEEM TESTS
     //////////////////////////////////////////////////////////////*/
     function test_RequestRedeem_auth() public {
         uint256 shares = _depositAs(alice, 1000e6);
@@ -51,30 +52,6 @@ contract RedemptionTest is TestBase {
         vault.requestRedeem(shares, alice, alice);
 
         assertEq(vault.pendingRedeemRequest(0, alice), shares, "operator request recorded for owner");
-    }
-
-    function test_Redeem_revertsOnZeroReceiver() public {
-        vm.prank(alice);
-        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
-        vault.redeem(1000e6, address(0), alice);
-    }
-
-    function test_Redeem_revertsIfUnauthorized() public {
-        vm.prank(bob);
-        vm.expectRevert(ISupplyBorrowVault.UNAUTHORIZED.selector);
-        vault.redeem(1000e6, alice, alice);
-    }
-
-    function test_Redeem_revertsIfExceedsClaimable() public {
-        uint256 shares = _depositAs(alice, 1000e6);
-        vm.prank(alice);
-        vault.requestRedeem(shares, alice, alice);
-        vm.prank(admin);
-        vault.fulfillRedeemRequest(alice, shares);
-
-        vm.prank(alice);
-        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
-        vault.redeem(shares + 1, alice, alice);
     }
 
     function test_RequestRedeem_revertsOnZeroShares() public {
@@ -106,24 +83,6 @@ contract RedemptionTest is TestBase {
         assertEq(vault.totalSupply(), shares, "escrowed shares still in totalSupply");
     }
 
-    function test_Redeem_partial() public {
-        uint256 shares = _depositAs(alice, 1000e6);
-        vm.prank(alice);
-        vault.requestRedeem(shares, alice, alice);
-        vm.prank(admin);
-        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
-
-        uint256 halfShares = shares / 2;
-        uint256 balBefore = asset.balanceOf(alice);
-        vm.prank(alice);
-        uint256 assetsReceived = vault.redeem(halfShares, alice, alice);
-
-        assertEq(asset.balanceOf(alice) - balBefore, assetsReceived, "received correct assets");
-        assertApproxEqAbs(assetsReceived, assets / 2, 1, "roughly half the total assets");
-        assertEq(vault.maxRedeem(alice), shares - halfShares, "remaining claimable shares");
-        assertGt(vault.maxWithdraw(alice), 0, "remaining claimable assets");
-    }
-
     function test_RequestRedeem_accumulatesMultipleRequests() public {
         uint256 shares = _depositAs(alice, 2000e6);
         uint256 half = shares / 2;
@@ -135,53 +94,6 @@ contract RedemptionTest is TestBase {
         vm.prank(alice);
         vault.requestRedeem(half, alice, alice);
         assertEq(vault.pendingRedeemRequest(0, alice), shares, "pending accumulates");
-    }
-
-    function test_Redeem_operatorCanRedeem() public {
-        uint256 shares = _depositAs(alice, 1000e6);
-        vm.prank(alice);
-        vault.requestRedeem(shares, alice, alice);
-        vm.prank(admin);
-        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
-
-        vm.prank(alice);
-        vault.setOperator(bob, true);
-
-        uint256 balBefore = asset.balanceOf(alice);
-        vm.prank(bob);
-        vault.redeem(shares, alice, alice);
-
-        assertEq(asset.balanceOf(alice) - balBefore, assets, "alice received assets via operator");
-        assertEq(vault.maxRedeem(alice), 0, "nothing left claimable");
-    }
-
-    /// @dev E2E test of redeem flow without borrowing and underlying deposit
-    function test_Redeem_E2E() public {
-        uint256 shares = _depositAs(alice, 1000e6);
-        vm.prank(alice);
-        vault.requestRedeem(shares, alice, alice);
-
-        assertEq(vault.balanceOf(alice), 0, "shares escrowed out of alice");
-        assertEq(vault.pendingRedeemRequest(0, alice), shares, "pending == requested");
-        assertEq(vault.maxRedeem(alice), 0, "nothing claimable before fulfillment");
-
-        vm.prank(admin);
-        uint256 fulfilledAssets = vault.fulfillRedeemRequest(alice, shares);
-
-        assertEq(vault.pendingRedeemRequest(0, alice), 0, "pending cleared");
-        assertEq(vault.maxRedeem(alice), shares, "claimable shares after fulfillment");
-        assertEq(vault.maxWithdraw(alice), fulfilledAssets, "claimable assets after fulfillment");
-        assertEq(vault.totalSupply(), 0, "escrowed shares burned at fulfillment");
-
-        uint256 balBefore = asset.balanceOf(alice);
-        vm.prank(alice);
-        uint256 claimed = vault.redeem(shares, alice, alice);
-
-        assertEq(claimed, fulfilledAssets, "claimed == fulfilled");
-        assertEq(asset.balanceOf(alice) - balBefore, fulfilledAssets, "assets paid out");
-        assertEq(vault.maxRedeem(alice), 0, "request fully consumed");
-
-        assertApproxEqAbs(claimed, 1000e6, 10, "round-trip ~= deposit");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -294,7 +206,106 @@ contract RedemptionTest is TestBase {
     }
 
     /*//////////////////////////////////////////////////////////////
-                            WITHDRAW TESTS
+                            REDEMPTION TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    /// @dev E2E test of redeem flow without borrowing and underlying deposit
+    function test_Redeem_E2E() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+
+        assertEq(vault.balanceOf(alice), 0, "shares escrowed out of alice");
+        assertEq(vault.pendingRedeemRequest(0, alice), shares, "pending == requested");
+        assertEq(vault.maxRedeem(alice), 0, "nothing claimable before fulfillment");
+
+        vm.prank(admin);
+        uint256 fulfilledAssets = vault.fulfillRedeemRequest(alice, shares);
+
+        assertEq(vault.pendingRedeemRequest(0, alice), 0, "pending cleared");
+        assertEq(vault.maxRedeem(alice), shares, "claimable shares after fulfillment");
+        assertEq(vault.maxWithdraw(alice), fulfilledAssets, "claimable assets after fulfillment");
+        assertEq(vault.totalSupply(), 0, "escrowed shares burned at fulfillment");
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(alice);
+        uint256 claimed = vault.redeem(shares, alice, alice);
+
+        assertEq(claimed, fulfilledAssets, "claimed == fulfilled");
+        assertEq(asset.balanceOf(alice) - balBefore, fulfilledAssets, "assets paid out");
+        assertEq(vault.maxRedeem(alice), 0, "request fully consumed");
+
+        assertApproxEqAbs(claimed, 1000e6, 10, "round-trip ~= deposit");
+    }
+
+    function test_Redeem_revertsOnZeroShares() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_AMOUNT.selector);
+        vault.redeem(0, alice, alice);
+    }
+
+    function test_Redeem_revertsOnZeroReceiver() public {
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.ZERO_ADDRESS.selector);
+        vault.redeem(1000e6, address(0), alice);
+    }
+
+    function test_Redeem_revertsIfUnauthorized() public {
+        vm.prank(bob);
+        vm.expectRevert(ISupplyBorrowVault.UNAUTHORIZED.selector);
+        vault.redeem(1000e6, alice, alice);
+    }
+
+    function test_Redeem_revertsIfExceedsClaimable() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
+        vault.redeem(shares + 1, alice, alice);
+    }
+
+    function test_Redeem_partial() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        uint256 halfShares = shares / 2;
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(alice);
+        uint256 assetsReceived = vault.redeem(halfShares, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, assetsReceived, "received correct assets");
+        assertApproxEqAbs(assetsReceived, assets / 2, 1, "roughly half the total assets");
+        assertEq(vault.maxRedeem(alice), shares - halfShares, "remaining claimable shares");
+        assertGt(vault.maxWithdraw(alice), 0, "remaining claimable assets");
+    }
+
+    function test_Redeem_operatorCanRedeem() public {
+        uint256 shares = _depositAs(alice, 1000e6);
+        vm.prank(alice);
+        vault.requestRedeem(shares, alice, alice);
+        vm.prank(admin);
+        uint256 assets = vault.fulfillRedeemRequest(alice, shares);
+
+        vm.prank(alice);
+        vault.setOperator(bob, true);
+
+        uint256 balBefore = asset.balanceOf(alice);
+        vm.prank(bob);
+        vault.redeem(shares, alice, alice);
+
+        assertEq(asset.balanceOf(alice) - balBefore, assets, "alice received assets via operator");
+        assertEq(vault.maxRedeem(alice), 0, "nothing left claimable");
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                          WITHDRAW CLAIM TESTS
     //////////////////////////////////////////////////////////////*/
 
     function test_Withdraw() public {
@@ -343,11 +354,11 @@ contract RedemptionTest is TestBase {
         vm.prank(admin);
         vault.fulfillRedeemRequest(alice, shares);
 
-        uint256 claimableAssets = vault.maxWithdraw(alice);
+        uint256 claimable = vault.maxWithdraw(alice);
 
         vm.prank(alice);
         vm.expectRevert(ISupplyBorrowVault.INVALID_AMOUNT.selector);
-        vault.withdraw(claimableAssets + 1, alice, alice);
+        vault.withdraw(claimable + 1, alice, alice);
     }
 
     function test_Withdraw_partial() public {
@@ -384,5 +395,4 @@ contract RedemptionTest is TestBase {
         assertEq(asset.balanceOf(alice) - balBefore, assets, "alice received assets via operator");
         assertEq(vault.maxWithdraw(alice), 0, "nothing left claimable");
     }
-
 }
