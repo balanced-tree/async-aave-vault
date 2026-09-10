@@ -110,7 +110,7 @@ abstract contract TestConfigSetup is Test {
 
     // Prepares forks for testing
     function _prepareForks() internal {
-        forks[ETH] = vm.createSelectFork(ethereumRpcUrl);
+        forks[ETH] = vm.createSelectFork(ethereumRpcUrl, 25730000);
 
         rpcURLs[ETH] = ethereumRpcUrl;
         // rpcURLs[BASE] = baseRpcUrl;
