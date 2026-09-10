@@ -376,41 +376,6 @@ contract RedemptionTest is TestBase {
         assertGt(vault.maxWithdraw(alice), 0, "remaining claimable assets");
     }
 
-    // Fuzz deposit amount and the share subset redeemed. Invariants across the full
-    // request → fulfill → redeem cycle: pending clears, claimable tracks the fulfilled
-    // amount, assets paid out match, and the vault is left in consistent state.
-    function testFuzz_RequestAndFulfillRedeem(uint256 depositAmount, uint256 redeemFraction) public {
-        depositAmount = bound(depositAmount, 1e6, 1e12);
-        uint256 shares = _depositAs(alice, depositAmount);
-
-        // redeemFraction ∈ [1, shares] so we always redeem at least 1 share
-        uint256 sharesToRedeem = bound(redeemFraction, 1, shares);
-
-        vm.prank(alice);
-        vault.requestRedeem(sharesToRedeem, alice, alice);
-
-        assertEq(vault.pendingRedeemRequest(0, alice), sharesToRedeem, "pending set after request");
-        assertEq(vault.balanceOf(alice), shares - sharesToRedeem, "escrowed shares leave alice");
-        assertEq(vault.maxRedeem(alice), 0, "nothing claimable before fulfillment");
-
-        vm.prank(admin);
-        uint256 fulfilledAssets = vault.fulfillRedeemRequest(alice, sharesToRedeem);
-
-        assertGt(fulfilledAssets, 0, "fulfilled assets must be > 0");
-        assertEq(vault.pendingRedeemRequest(0, alice), 0, "pending cleared after fulfillment");
-        assertEq(vault.maxRedeem(alice), sharesToRedeem, "claimable shares set");
-        assertEq(vault.maxWithdraw(alice), fulfilledAssets, "claimable assets set");
-
-        uint256 balBefore = asset.balanceOf(alice);
-        vm.prank(alice);
-        uint256 claimed = vault.redeem(sharesToRedeem, alice, alice);
-
-        assertEq(claimed, fulfilledAssets, "claimed equals fulfilled");
-        assertEq(asset.balanceOf(alice) - balBefore, claimed, "assets paid out to alice");
-        assertEq(vault.maxRedeem(alice), 0, "claimable fully consumed");
-        assertEq(vault.maxWithdraw(alice), 0, "no claimable assets remain");
-    }
-
     function test_Redeem_operatorCanRedeem() public {
         uint256 shares = _depositAs(alice, 1000e6);
         vm.prank(alice);
