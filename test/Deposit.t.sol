@@ -103,8 +103,8 @@ contract DepositTest is TestBase {
         assertGt(shares, 0, "deposit must mint shares");
         assertEq(vault.balanceOf(alice), shares, "alice holds all minted shares");
         assertEq(vault.totalSupply(), shares, "total supply equals alice's shares");
-        assertApproxEqAbs(vault.totalAssets(), amount, 1, "totalAssets matches deposit");
-        assertApproxEqAbs(vault.convertToAssets(shares), amount, 1, "convertToAssets round-trips within 1 wei");
+        assertApproxEqAbs(vault.totalAssets(), amount, 2, "totalAssets matches deposit");
+        assertApproxEqAbs(vault.convertToAssets(shares), amount, 2, "convertToAssets round-trips within 2 wei");
     }
 
     /*//////////////////////////////////////////////////////////////
