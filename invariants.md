@@ -35,3 +35,17 @@ Debt is oracle-converted with ceiling rounding; borrow-asset holdings with floor
 **N3.** `totalAssets()` slightly overstates NAV when Aave interest has accrued but the debt view is stale. At actual repayment the debt is settled at the accrued amount, so any surplus USDC from Morpho outperforming covers it. This overshoot is non-exploitable but visible in view calls.
 
 ---
+
+## Redemption state machine
+
+**R1.** `balanceOf(address(vault)) == Σ pendingShares[controller]`
+`requestRedeem` transfers shares into the vault; `fulfillRedeemRequest` burns them. The vault never holds shares for any other reason.
+
+**R2.** `maxRedeem(controller) > 0` implies the corresponding assets are physically present in the contract.
+Follows from A4: `_reservedAssets` is fully backed by USDT tokens.
+
+**R3.** `fulfillRedeemRequest` atomically: decrements `pendingShares`, burns the escrowed shares, decrements `_accountedIdleAssets`, increments `_reservedAssets` and `claimableAssets`. Total supply and totalAssets both drop by the same value, so pps is unchanged by fulfillment.
+
+**R4.** Fulfillment reverts with `INSUFFICIENT_LIQUIDITY` if Aave debt is non-zero and idle USDT is insufficient to cover the redemption. Collateral cannot be pulled while debt is open.
+
+---
