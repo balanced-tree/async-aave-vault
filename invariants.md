@@ -62,3 +62,19 @@ Checked at the end of `deleverage` (lines 290–292). If debt is fully cleared t
 `setMinHealthFactor` enforces `>= MIN_HEALTH_FACTOR`; the constructor sets the same floor.
 
 ---
+
+## Cost basis
+
+**C1.** Full transfer (entire sender balance): `costBasisPerShare[sender] == 0` after.
+
+**C2.** Partial transfer: `costBasisPerShare[sender]` unchanged.
+
+**C3.** Full burn (entire holder balance): `costBasisPerShare[holder] == 0` after.
+
+**C4.** Partial burn: `costBasisPerShare[holder]` unchanged.
+
+**C5.** Receiver's new basis is the weighted average of existing and incoming:
+`(oldBasis × oldBalance + senderBasis × amount) / (oldBalance + amount)`
+When the receiver starts at zero this collapses to the sender's basis exactly.
+
+---
