@@ -78,3 +78,13 @@ Checked at the end of `deleverage` (lines 290–292). If debt is fully cleared t
 When the receiver starts at zero this collapses to the sender's basis exactly.
 
 ---
+
+## Access Control
+
+**AC1.** Exactly one address holds `MANAGER_ROLE` at any time.
+`setManager` revokes the old manager before granting the new one; the constructor grants it once to `admin`.
+
+**AC2.** The `manager` state variable always equals the current `MANAGER_ROLE` holder.
+Kept in sync by `setManager`, which updates both atomically.
+
+**AC3.** `DEFAULT_ADMIN_ROLE` is granted only to `admin_` in the constructor and never transferred by the vault itself.
