@@ -36,7 +36,7 @@ Debt is oracle-converted with ceiling rounding; borrow-asset holdings with floor
 
 ---
 
-## Redemption state machine
+## Redemption State Machine
 
 **R1.** `balanceOf(address(vault)) == Σ pendingShares[controller]`
 `requestRedeem` transfers shares into the vault; `fulfillRedeemRequest` burns them. The vault never holds shares for any other reason.
