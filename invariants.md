@@ -50,7 +50,7 @@ Follows from A4: `_reservedAssets` is fully backed by USDT tokens.
 
 ---
 
-## Leverage / health factor
+## Leverage / Health Factor
 
 **L1.** After every `executeStrategy` call with `borrowAmount > 0`, health factor ≥ `minHealthFactor`.
 Enforced by `_borrowFromAave` before the borrow executes.
