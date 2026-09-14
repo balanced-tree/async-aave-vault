@@ -49,3 +49,16 @@ Follows from A4: `_reservedAssets` is fully backed by USDT tokens.
 **R4.** Fulfillment reverts with `INSUFFICIENT_LIQUIDITY` if Aave debt is non-zero and idle USDT is insufficient to cover the redemption. Collateral cannot be pulled while debt is open.
 
 ---
+
+## Leverage / health factor
+
+**L1.** After every `executeStrategy` call with `borrowAmount > 0`, health factor ≥ `minHealthFactor`.
+Enforced by `_borrowFromAave` before the borrow executes.
+
+**L2.** After every `deleverage` call where residual debt remains, health factor ≥ `minHealthFactor`.
+Checked at the end of `deleverage` (lines 290–292). If debt is fully cleared the check is skipped.
+
+**L3.** `minHealthFactor ≥ MIN_HEALTH_FACTOR (1.3e18)` always.
+`setMinHealthFactor` enforces `>= MIN_HEALTH_FACTOR`; the constructor sets the same floor.
+
+---
