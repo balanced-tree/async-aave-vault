@@ -1,0 +1,21 @@
+{
+  "name": "@internal/sbv-sdk",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "viem": "^2.21.0",
+    "vitest": "^2.1.0"
+  }
+}
